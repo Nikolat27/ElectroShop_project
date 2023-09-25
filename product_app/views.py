@@ -203,5 +203,3 @@ def contact_us(request):
     return render(request, "product_app/contact.html")
 
 
-def contact_us2(request):
-    pass
