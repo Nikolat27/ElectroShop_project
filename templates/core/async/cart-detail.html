@@ -1,0 +1,63 @@
+<a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+    <i class="fa fa-shopping-cart"></i>
+    <span>Your Cart</span>
+    <div class="qty cart-items-count" id="cart-items-count">{{ cart.len }}</div>
+</a>
+<div class="cart-dropdown">
+    <div class="cart-list">
+        {% for item in cart %}
+            <div class="product-widget">
+                <div class="product-img">
+                    <img src="{{ item.product.image.url }}" width="80px" height="80px"
+                         alt="">
+                </div>
+                <div class="product-body">
+                    <h3 class="product-name"><a href="#">{{ item.product.title }}</a>
+                    </h3>
+                    <h4 class="product-price"><span
+                            class="qty">{{ item.quantity }}</span>${{ item.price }}</h4>
+                </div>
+                <form action="{% url "cart_app:delete_cart" item.unique_id %}"
+                      id="{{ item.id }}">
+                    <button type="submit"
+                            class="delete"><i
+                            class="fa fa-close"></i></button>
+                </form>
+            </div>
+            <script>
+                $('#{{ item.id }}').submit(function (e) {
+                    e.preventDefault();
+                    console.log("hello");
+                    $.ajax({
+                        data: $(this).serialize(),
+                        method: $(this).attr("method"),
+                        url: $(this).attr("action"),
+                        dataType: 'json',
+
+                        beforeSend: function () {
+                            console.log("Deleting Product...");
+                        },
+                        success: function (response) {
+                            console.log("Product Deleted successfully!");
+                            if (response.bool === true) {
+                                $("#cart-items-count").text(response.totalcartitems)
+                                $("#cart-view").html(response.data)
+                            }
+                        }
+                    })
+                })
+            </script>
+        {% empty %}
+            Your cart is empty
+        {% endfor %}
+    </div>
+    <div class="cart-summary">
+        <small>{{ cart.len }} Item(s) selected</small>
+        <h5>SUBTOTAL: ${{ cart.total }}</h5>
+    </div>
+    <div class="cart-btns">
+        <a href="{% url "cart_app:cart_view" %}">View Cart</a>
+        <a href="{% url "cart_app:order_creation" %}">Checkout <i
+                class="fa fa-arrow-circle-right"></i></a>
+    </div>
+</div>

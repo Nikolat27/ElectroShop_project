@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact us</title>
+</head>
+<body>
+
+<form action="" method="post">
+    {% csrf_token %}
+    Enter your subject:
+    <input type="text" name="subject">
+    <br><br>
+    Enter your massage:
+    <input type="text" name="body">
+    <br><br>
+    <button type="submit">Send</button>
+</form>
+<br><br><br>
+<div>
+    {% for ticket in rt %}
+        <p style="color: blue">{{ ticket.massage|truncatewords:30 }}</p>
+        {% if ticket.answer %}
+            <p style="color:red">{{ ticket.answer|truncatewords:30 }}</p>
+        {% else %}
+            <p style="color: green">No answer yet :(</p>
+        {% endif %}
+    {% endfor %}
+</div>
+</body>
+</html>

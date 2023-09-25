@@ -1,0 +1,85 @@
+{% load static %}
+<div id="reviews">
+    <ul class="comments">
+        <div class="container">
+            <div class="comment" id="comment-list">
+                {% for comment in product.comments.all %}
+                    {% if comment.parent == None %}
+                        <div class="cmnt--self">
+                            <div class="cmnt--header">
+                                {% if comment.author.prof_pic %}
+                                    <div class="cmnt-img">
+                                        <img src="{{ comment.author.prof_pic.url }}"
+                                             alt="No picture">
+                                    </div>
+                                {% else %}
+                                    <div class="cmnt-img">
+                                        <img src="{% static "img/person.png" %}"
+                                             alt="No picture">
+                                    </div>
+                                {% endif %}
+                                <span class="cmnt--name">
+																		{{ comment.author.email }}
+																	</span>
+                                <span class="cmnt--date">
+																		{{ comment.created_at.date }}
+																	</span>
+                                <button onclick="set_value({{ comment.id }})"
+                                        type="button"
+                                        class="cmnt--replybtn">
+                                    reply
+                                </button>
+                            </div>
+                            <div class="cmnt--body">
+                                <p>
+                                    {{ comment.body }}
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% for reply in comment.replies.all %}
+                        <div class="cmnt--reply">
+                            <div class="cmnt--header">
+                                {% if reply.author.prof_pic %}
+                                    <div class="cmnt-img">
+                                        <img src="{{ reply.author.prof_pic.url }}"
+                                             alt="No picture">
+                                    </div>
+                                {% else %}
+                                    <div class="cmnt-img">
+                                        <img src="{% static "img/person.png" %}"
+                                             alt="No picture">
+                                    </div>
+                                {% endif %}
+                                <span class="cmnt--name">
+																		{{ reply.author.email }}
+																	</span>
+                                <span class="cmnt--date">
+																		{{ reply.created_at.date }}
+																	</span>
+                                <button onclick="set_value({{ reply.id }})"
+                                        type="button"
+                                        class="cmnt--replybtn">
+                                    reply
+                                </button>
+                            </div>
+                            <div class="cmnt--body">
+                                <p>
+                                    {{ reply.body }}
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </ul>
+    <ul class="reviews-pagination">
+        <li class="active">1</li>
+        <li><a href="#">2</a></li>
+        <li><a href="#">3</a></li>
+        <li><a href="#">4</a></li>
+        <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+    </ul>
+</div>
+

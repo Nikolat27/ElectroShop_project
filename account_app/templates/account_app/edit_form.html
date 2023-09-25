@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit page</title>
+</head>
+<body>
+<h3>Edit Page</h3>
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    username
+    <input type="text" name="username">
+    <br><br>
+    fullname
+    <input type="text" name="fullname">
+    <br><br>
+    profile
+    <input type="file" name="prof_pic">
+    <br><br>
+    email
+    <input type="email" name="email">
+    <br><br>
+    password1
+    <input type="password" name="password1">
+    <br><br>
+    Repeat password
+    <input type="password" name="password2">
+    <br><br>
+    <a href="{% url "accounts_app:pass_change_page" %}">Forgot your password?</a>
+    <button type="submit">Edit here</button>
+</form>
+</body>
+</html>

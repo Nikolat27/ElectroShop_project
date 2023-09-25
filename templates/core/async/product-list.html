@@ -1,0 +1,88 @@
+{% load templatetags %}
+<div class="row">
+    {% for product in products %}
+        <form action="{% url "cart_app:cart_add" product.id %}" method="post">
+            {% csrf_token %}
+            <div class="col-md-4 col-xs-6">
+                <div class="product">
+                    <div class="product-img">
+                        <img src="{{ product.image.url }}" alt="">
+                        <div class="product-label">
+                            {% if product.discount %}
+                                <span class="sale">-{{ product.discount }}%</span>
+                            {% else %}
+                                <span class="sale">No discount yet</span>
+                            {% endif %}
+                            <span class="new">NEW</span>
+                        </div>
+                    </div>
+                    <div class="product-body">
+                        <p class="product-category">{{ product.category.all.0 }}</p>
+                        <h3 class="product-name"><a
+                                href="{% url "products_app:detail" product.slug %}">{{ product.title }}</a>
+                        </h3>
+                        {% if product.discount %}
+                            <h4 class="product-price">${{ product.discount_price }}
+                                <del class="product-old-price">${{ product.price }}</del>
+                            </h4>
+                        {% else %}
+                            <h4 class="product-price">${{ product.price }}</h4>
+                        {% endif %}
+                        <div class="product-rating">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="add-to-cart">
+                        <button type="submit" class="add-to-cart-btn"><i
+                                class="fa fa-shopping-cart"></i> add to cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% empty %}
+        <a href="{% url "home_app:main" %}">Nothing founded!</a>
+    {% endfor %}
+    <!-- /product -->
+    <div class="clearfix visible-sm visible-xs"></div>
+    <!-- /product -->
+</div>
+<!-- /store products -->
+{% if request.category %}
+    hello world 1
+{% else %}
+    hello world 2
+{% endif %}
+{% if request.min_price %}
+    {{ request.min_price }}
+    {% else %}
+    hello world 4
+{% endif %}
+<!-- store bottom filter -->
+{% if products.has_other_pages %}
+    <div class="store-filter clearfix">
+        <ul class="store-pagination">
+            {% if products.has_previous %}
+                <li><a href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"><i
+                        class="fa fa-angle-left"></i></a></li>
+            {% endif %}
+            {% for x in products.paginator.page_range %}
+                {% if products.number == x %}
+                    <li class="active"><a style="color: white" href="?page={{ x }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ x }}</a>
+                    </li>
+                {% else %}
+                    <li class=""><a href="?page={{ x }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}">{{ x }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if products.has_next %}
+                <li><a href="?page={{ products.next_page_number }}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category.0 }}{% endif %}"><i
+                        class="fa fa-angle-right"></i></a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endif %}

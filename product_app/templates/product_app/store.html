@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+{% load templatetags %}
+{% block title %}
+    <title>Store Page</title>
+{% endblock %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+{% block content %}
+    <!-- SECTION -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <!-- ASIDE -->
+                <div id="aside" class="col-md-3">
+                    <!-- aside Widget -->
+
+                    {% if not request.GET.search %}
+                        <div class="aside">
+                            <h3 class="aside-title">Categories</h3>
+                            <form action="{% url "products_app:filter_products" %}" method="GET"
+                                  id="product-filter-form">
+                                {% for cat in categories %}
+                                    <div class="checkbox-filter">
+                                        <div class="input-checkbox">
+                                            <input type="checkbox" class="filter-checkbox"
+                                                   name="category" value="{{ cat.name }}" id="{{ cat.id }}">
+                                            <label for="{{ cat.id }}">
+                                                <span></span>
+                                                {{ cat.name }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <hr>
+                        </div>
+
+                        <div class="aside">
+                            <h3 class="aside-title">Price</h3>
+                            <div class="price-filter">
+                                <div id="price-slider"></div>
+                                <div class="input-number price-min">
+                                    {% if request.GET.min_price %}
+                                        <input type="number" name="min_price" value="{{ request.GET.min_price }}">
+                                    {% else %}
+                                        <input type="number" name="min_price">
+                                    {% endif %}
+                                    <span class="qty-up">+</span>
+                                    <span class="qty-down">-</span>
+                                </div>
+                                <span>-</span>
+                                <div class="input-number price-max">
+                                    {% if request.GET.max_price %}
+                                        <input type="number" name="max_price" value="{{ request.GET.max_price }}">
+                                    {% else %}
+                                        <input type="number" name="max_price">
+                                    {% endif %}
+
+                                    <span class="qty-up">+</span>
+                                    <span class="qty-down">-</span>
+                                </div>
+                            </div>
+                            <br>
+                            <button type="submit" class="btn btn-danger">Apply Filter</button>
+                        </div>
+                        </form>
+                    {% endif %}
+                    <!-- /aside Widget -->
+                </div>
+                <!-- /ASIDE -->
+
+                <!-- STORE -->
+                <div id="filtered_products" class="col-md-9">
+                    <!-- /store top filter -->
+
+                    <!-- store products -->
+                    <div class="row infinite-container">
+                        <!-- product -->
+                        {% for product in products %}
+                            <form action="{% url "cart_app:cart_add" product.id %}" method="post">
+                                {% csrf_token %}
+                                <div class="col-md-4 col-xs-6 infinite-item">
+                                    <div class="product">
+                                        <div class="product-img">
+                                            <img src="{{ product.image.url }}" alt="">
+                                            <div class="product-label">
+                                                {% if product.discount %}
+                                                    <span class="sale">-{{ product.discount }}%</span>
+                                                {% else %}
+                                                    <span class="sale">No discount yet</span>
+                                                {% endif %}
+                                                <span class="new">NEW</span>
+                                            </div>
+                                        </div>
+                                        <div class="product-body">
+                                            <p class="product-category">{{ product.category.all.0 }}</p>
+                                            <h3 class="product-name"><a
+                                                    href="{% url "products_app:detail" product.slug %}">{{ product.title }}</a>
+                                            </h3>
+                                            {% if product.discount %}
+                                                <h4 class="product-price">${{ product.discount_price }}
+                                                    <del class="product-old-price">${{ product.price }}</del>
+                                                </h4>
+                                            {% else %}
+                                                <h4 class="product-price">${{ product.price }}</h4>
+                                            {% endif %}
+                                            <div class="product-rating">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        {% empty %}
+                            <a href="{% url "home_app:main" %}">Nothing founded!</a>
+                        {% endfor %}
+                        <!-- /product -->
+                        <div class="clearfix visible-sm visible-xs"></div>
+                        <!-- /product -->
+                    </div>
+                    <!-- /store products -->
+
+                    <!-- store bottom filter -->
+                    {% if products.has_other_pages %}
+                        <div class="store-filter clearfix">
+                            <ul class="store-pagination">
+                                {% if products.has_previous %}
+                                    <li><a href="?page={{ products.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}"><i
+                                            class="fa fa-angle-left"></i></a></li>
+                                {% endif %}
+                                {% for x in products.paginator.page_range %}
+                                    {% if products.number == x %}
+                                        <li class="active"><a style="color: white" href="?page={{ x }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}
+                                                {% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}">
+                                            {{ x }}</a></li>
+                                    {% elif x > products.number|add:'-2' and x < products.number|add:'2' %}
+                                        <li class=""><a href="?page={{ x }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}">{{ x }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if products.has_next %}
+                                    {% if products.number < products.paginator.num_pages|add:'-5' %}
+                                        <li><a href="?page={{ products.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                    {% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}"><i
+                                                class=""></i>...</a></li>
+                                        <li><a href="?page={{ products.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                    {% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}"><i
+                                                class=""></i>{{ products.paginator.num_pages }}</a></li>
+                                    {% elif products.number < products.paginator.num_pages|add:'-2' %}
+                                        <li><a href="?page={{ products.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                    {% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}"><i
+                                                class=""></i>{{ products.paginator.num_pages }}</a></li>
+                                    {% endif %}
+                                    <li><a href="?page={{ products.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}
+                    {% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}{% if request.GET.category %}{% for cat in request.GET|get_list:'category' %}&category={{ cat }}{% endfor %}{% endif %}"><i
+                                            class="fa fa-angle-right"></i></a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <!-- /store bottom filter -->
+                </div>
+                <!-- /STORE -->
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /SECTION -->
+
+    <!-- NEWSLETTER -->
+    <div id="newsletter" class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="newsletter">
+                        <p>Sign Up for the <strong>NEWSLETTER</strong></p>
+                        <form>
+                            <input class="input" type="email" placeholder="Enter Your Email">
+                            <button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+                        </form>
+                        <ul class="newsletter-follow">
+                            <li>
+                                <a href="#"><i class="fa fa-facebook"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-twitter"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-instagram"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-pinterest"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /NEWSLETTER -->
+
+{% endblock %}

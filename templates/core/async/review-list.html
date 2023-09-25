@@ -1,0 +1,113 @@
+<div id="rating">
+    <div class="rating-avg">
+        <span>{{ ar.reviews|floatformat:1 }}</span>
+        {% if ar.reviews == 1 %}
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+        {% elif ar.reviews == 2 %}
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+        {% elif ar.reviews == 3 %}
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+        {% elif ar.reviews == 4 %}
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+        {% elif ar.reviews == 5 %}
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+            </div>
+        {% endif %}
+    </div>
+    <ul class="rating">
+        <li>
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+            </div>
+            <div class="rating-progress">
+                <div style="width: 80%;"></div>
+            </div>
+            <span class="sum">{{ ar.reviews }}</span>
+        </li>
+        <li>
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <div class="rating-progress">
+                <div style="width: 60%;"></div>
+            </div>
+            <span class="sum">2</span>
+        </li>
+        <li>
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <div class="rating-progress">
+                <div></div>
+            </div>
+            <span class="sum">0</span>
+        </li>
+        <li>
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <div class="rating-progress">
+                <div></div>
+            </div>
+            <span class="sum">0</span>
+        </li>
+        <li>
+            <div class="rating-stars">
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+                <i class="fa fa-star-o"></i>
+            </div>
+            <div class="rating-progress">
+                <div></div>
+            </div>
+            <span class="sum">0</span>
+        </li>
+    </ul>
+</div>

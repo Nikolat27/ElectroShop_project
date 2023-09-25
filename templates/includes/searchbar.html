@@ -1,0 +1,19 @@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<div class="col-md-6">
+    <div class="header-search">
+        <form method="get" action="{% url "products_app:search_page" %}">
+            <input class="input" name="search" id="search" placeholder="Search here">
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+<script>
+    $(function () {
+        $("#search").autocomplete({
+            source: '{% url "products_app:autocomplete" %}',
+            minLength: 2
+        });
+    });
+</script>

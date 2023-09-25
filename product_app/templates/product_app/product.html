@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+{% load social_share %}
+{% load static %}
+<!DOCTYPE html>
+
+{% block title %}
+     <title>Product Detail</title>
+{% endblock %}
+
+{% block content %}
+
+    <!-- SECTION -->
+    <div class="section product-data">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <!-- Product main img -->
+                <div class="col-md-5 col-md-push-2">
+                    <div id="product-main-img">
+                        <div class="product-preview">
+                            <img src="{{ product.image.url }}" alt="">
+                        </div>
+                        {% if product.image2 %}
+                            <div class="product-preview">
+                                <img src="{{ product.image2.url }}" alt="">
+                            </div>
+                        {% endif %}
+
+                        {% if product.image3 %}
+                            <div class="product-preview">
+                                <img src="{{ product.image3.url }}" alt="">
+                            </div>
+                        {% endif %}
+
+                        {% if product.image4 %}
+                            <div class="product-preview">
+                                <img src="{{ product.image4.url }}" alt="">
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- /Product main img -->
+
+                <!-- Product thumb imgs -->
+                <div class="col-md-2  col-md-pull-5">
+                    <div id="product-imgs">
+                        {% if product.image %}
+                            <div class="product-preview">
+                                <img src="{{ product.image.url }}" width="165px" height="165px" alt="">
+                            </div>
+                        {% endif %}
+
+                        {% if product.image2 %}
+                            <div class="product-preview">
+                                <img src="{{ product.image2.url }}" width="165px" height="165px" alt="">
+                            </div>
+                        {% endif %}
+
+                        {% if product.image3 %}
+                            <div class="product-preview">
+                                <img src="{{ product.image3.url }}" width="165px" height="165px" alt="">
+                            </div>
+                        {% endif %}
+
+                        {% if product.image4 %}
+                            <div class="product-preview">
+                                <img src="{{ product.image4.url }}" width="165px" height="165px" alt="">
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- /Product thumb imgs -->
+
+                <!-- Product details -->
+                <form method="POST" id="add-to-cart-form" action="{% url "cart_app:cart_add" product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="prod_id" class="product-id" value="{{ product.id }}">
+                    <div class="col-md-5">
+                        <div class="product-details">
+                            <h2 class="product-name">{{ product.title }}</h2>
+                            <div>
+                                <div class="product-rating">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                </div>
+                                <a class="review-link" onclick="change_loc()" href="#">{{ product.comments.all.count }}
+                                    Review(s) | Add your review</a>
+                            </div>
+                            <input type="hidden" id="product_title" value="{{ product.title }}">
+                            <div>
+                                <h3 class="product-price" id="product_price">${{ product.price }}
+                                    {#                                    <del class="product-old-price">${{ product.price }}</del>#}
+                                </h3>
+                                <span class="product-available">In Stock</span>
+                            </div>
+                            <p>{{ product.description }}</p>
+
+
+                            <div class="product-options">
+                                <label>
+                                    Size
+                                    <select class="input-select" id="product-size" name="product_size">
+                                        {% for size in product.size.all %}
+                                            <option value="{{ size }}">{{ size }}</option>
+                                        {% empty %}
+                                            <option value="">No size available for this product</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                                <label>
+                                    Color
+                                    <select id="product-color" class="input-select" name="product_color">
+                                        {% for color in product.color.all %}
+                                            <option value="{{ color }}">{{ color }}</option>
+                                        {% empty %}
+                                            <option value="">No color available for this product</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div class="add-to-cart">
+                                <div class="qty-label">
+                                    Qty
+                                    <div class="input-number">
+                                        <input type="number" class="qty_input" id="product-quantity" name="quantity"
+                                               value="1">
+                                        <input type="hidden" id="product-id" value="{{ product.id }}">
+                                        <span class="qty-up">+</span>
+                                        <span class="qty-down">-</span>
+                                    </div>
+                                </div>
+                                <button type="submit" class="add-to-cart-btn" id="add-to-cart-btn"><i
+                                        class="fa fa-shopping-cart"></i> add to
+                                    cart
+                                </button>
+                                <strong class="text-success" id="product-res"></strong>
+                </form>
+            </div>
+            <ul class="product-btns">
+                {% if request.user.is_authenticated %}
+                    {% if is_liked is True %}
+                        <li>
+                            <a onclick="like('{{ product.slug }}', '{{ product.id }}')"><i
+                                    class="fa fa-heart" style="font-size: 17px"
+                                    id="like"></i></a>
+                            <span id="count">{{ product.likes.all.count }}</span>
+                        </li>
+                    {% else %}
+                        <li>
+                        <a onclick="like('{{ product.slug }}', '{{ product.id }}')"><i
+                                class="fa fa-heart-o"
+                                style="font-size: 17px" id="like"></i></a>
+                        <span id="count">{{ product.likes.all.count }}</span>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url "accounts_app:login_page" %}?next={% url "products_app:detail" product.slug %}"><span
+                            class="btn btn-danger">For like, you have to login first!</span></a>
+                {% endif %}
+            </ul>
+
+            <ul class="product-links">
+                <li>Category:</li>
+                <li><a href="#">{{ product.category.all.0 }}</a></li>
+                <li><a href="#">{{ product.category.all.1 }}</a></li>
+            </ul>
+
+            <ul class="product-links">
+                <li>Share:</li>
+
+                <li><a href="#"><i>{% post_to_facebook product.get_absolute_url "Facebook" %}</i></a>
+                </li>
+
+                <li><a href="#"><i>{% post_to_twitter "Twitter" product.get_absolute_url "Twitter" %}</i></a>
+                </li>
+
+                <li><a href="#"><i></i>{% post_to_telegram "Telegram" product.get_absolute_url "Telegram" %}
+                </a></li>
+
+                <li><a href="#"><i></i>{% post_to_whatsapp product.get_absolute_url "Whatsapp" %}
+                </a></li>
+            </ul>
+
+        </div>
+    </div>
+
+    <!-- /Product details -->
+
+    <!-- Product tab -->
+    <div class="col-md-12">
+        <div id="product-tab">
+            <!-- product tab nav -->
+            <ul class="tab-nav">
+                <li class="active"><a data-toggle="tab" href="#tab1">Description</a></li>
+                <li><a data-toggle="tab" href="#tab2">Details</a></li>
+                <li><a data-toggle="tab" href="#tab3">Reviews ({{ product.comments.all.count }})</a>
+                </li>
+            </ul>
+            <!-- /product tab nav -->
+
+            <!-- product tab content -->
+            <div class="tab-content" id="main_tab">
+                <!-- tab1  -->
+                <div id="tab1" class="tab-pane fade in active">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p>{{ product.description }}</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- /tab1  -->
+
+                <!-- tab2  -->
+                <div id="tab2" class="tab-pane fade in">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p>{{ informations.0 }}</p>
+                        </div>
+                        <div class="col-md-12">
+                            <p>{{ informations.1 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- /tab2  -->
+
+                <!-- tab3  -->
+                <div id="tab3" class="tab-pane fade in">
+                    <div class="row">
+                        <!-- Rating -->
+                        <div class="col-md-3" id="comment_part1">
+                            <div id="rating">
+                                <div class="rating-avg">
+                                    <span>{{ ar.reviews|floatformat:1 }}</span>
+                                    {% if ar.reviews == 1 %}
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                    {% elif ar.reviews == 2 %}
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                    {% elif ar.reviews == 3 %}
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                    {% elif ar.reviews == 4 %}
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                    {% elif ar.reviews == 5 %}
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <ul class="rating">
+                                    <li>
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                        </div>
+                                        <div class="rating-progress">
+                                            <div style="width: 80%;"></div>
+                                        </div>
+                                        <span class="sum">{{ ar.reviews }}</span>
+                                    </li>
+                                    <li>
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                        <div class="rating-progress">
+                                            <div style="width: 60%;"></div>
+                                        </div>
+                                        <span class="sum">2</span>
+                                    </li>
+                                    <li>
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                        <div class="rating-progress">
+                                            <div></div>
+                                        </div>
+                                        <span class="sum">0</span>
+                                    </li>
+                                    <li>
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                        <div class="rating-progress">
+                                            <div></div>
+                                        </div>
+                                        <span class="sum">0</span>
+                                    </li>
+                                    <li>
+                                        <div class="rating-stars">
+                                            <i class="fa fa-star"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                            <i class="fa fa-star-o"></i>
+                                        </div>
+                                        <div class="rating-progress">
+                                            <div></div>
+                                        </div>
+                                        <span class="sum">0</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- /Rating -->
+
+                        <!-- Reviews -->
+                        <div class="col-md-6 comment-col" id="comment_part2">
+                            <div id="reviews">
+                                <ul class="comments">
+                                    <div class="container">
+                                        <div class="comment" id="comment-list">
+                                            {% for comment in product.comments.all %}
+                                                {% if comment.parent == None %}
+                                                    <div class="cmnt--self">
+                                                        <div class="cmnt--header">
+                                                            {% if comment.author.prof_pic %}
+                                                                <div class="cmnt-img">
+                                                                    <img src="{{ comment.author.prof_pic.url }}"
+                                                                         alt="No picture">
+                                                                </div>
+                                                            {% else %}
+                                                                <div class="cmnt-img">
+                                                                    <img src="{% static "img/person.png" %}"
+                                                                         alt="No picture">
+                                                                </div>
+                                                            {% endif %}
+                                                            <span class="cmnt--name">
+																		{{ comment.author.email }}
+																	</span>
+                                                            <span class="cmnt--date">
+																		{{ comment.created_at.date }}
+																	</span>
+                                                            <button onclick="set_value({{ comment.id }})"
+                                                                    type="button"
+                                                                    class="cmnt--replybtn">
+                                                                reply
+                                                            </button>
+                                                        </div>
+                                                        <div class="cmnt--body">
+                                                            <p>
+                                                                {{ comment.body }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                {% for reply in comment.replies.all %}
+                                                    <div class="cmnt--reply">
+                                                        <div class="cmnt--header">
+                                                            {% if reply.author.prof_pic %}
+                                                                <div class="cmnt-img">
+                                                                    <img src="{{ reply.author.prof_pic.url }}"
+                                                                         alt="No picture">
+                                                                </div>
+                                                            {% else %}
+                                                                <div class="cmnt-img">
+                                                                    <img src="{% static "img/person.png" %}"
+                                                                         alt="No picture">
+                                                                </div>
+                                                            {% endif %}
+                                                            <span class="cmnt--name">
+																		{{ reply.author.email }}
+																	</span>
+                                                            <span class="cmnt--date">
+																		{{ reply.created_at.date }}
+																	</span>
+                                                            <button onclick="set_value({{ reply.id }})"
+                                                                    type="button"
+                                                                    class="cmnt--replybtn">
+                                                                reply
+                                                            </button>
+                                                        </div>
+                                                        <div class="cmnt--body">
+                                                            <p>
+                                                                {{ reply.body }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </ul>
+                                <ul class="reviews-pagination">
+                                    <li class="active">1</li>
+                                    <li><a href="#">2</a></li>
+                                    <li><a href="#">3</a></li>
+                                    <li><a href="#">4</a></li>
+                                    <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- /Reviews -->
+
+                        <!-- Review Form -->
+                        <div class="col-md-3">
+                            <div id="review-form">
+                                <form class="review-form" method="POST"
+                                      action="{% url "products_app:ajax_add_review" product.id %}"
+                                      id="commentForm">
+                                    {% csrf_token %}
+                                    {#                                    <textarea class="input" name="body" id="body"#}
+                                    {#                                              placeholder="Your Review"></textarea>#}
+                                    {{ review_form.body }}
+                                    <strong class="text-success" id="review-res"></strong>
+                                    <br>
+                                    <div class="input-rating">
+                                        <span>Your Rating: </span>
+                                        <div class="stars">
+                                            <input id="star5" name="rating" value="5"
+                                                   type="radio"><label
+                                                for="star5"></label>
+                                            <input id="star4" name="rating" value="4"
+                                                   type="radio"><label
+                                                for="star4"></label>
+                                            <input id="star3" name="rating" value="3"
+                                                   type="radio"><label
+                                                for="star3"></label>
+                                            <input id="star2" name="rating" value="2"
+                                                   type="radio"><label
+                                                for="star2"></label>
+                                            <input id="star1" name="rating" value="1"
+                                                   type="radio"><label
+                                                for="star1"></label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="primary-btn">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- /Review Form -->
+                    </div>
+                </div>
+                <!-- /tab3  -->
+            </div>
+            <!-- /product tab content  -->
+        </div>
+    </div>
+    <!-- /product tab -->
+    </div>
+    <!-- /row -->
+    </div>
+    <!-- /container -->
+    </div>
+    <!-- /SECTION -->
+    <!-- /product tab -->
+    </div>
+    <!-- /row -->
+    </div>
+    <!-- /container -->
+    </div>
+    <!-- /SECTION -->
+
+    <!-- Section -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+
+                <div class="col-md-12">
+                    <div class="section-title text-center">
+                        <h3 class="title">Related Products</h3>
+                    </div>
+                </div>
+                <!-- product -->
+                {% for product in rp %}
+                    <div class="col-md-3 col-xs-6">
+                        <div class="product">
+                            <div class="product-img">
+                                <img src="{{ product.image.url }}" width="60px" height="200px" alt="">
+                                <div class="product-label">
+                                    <span class="sale">-{{ product.discount }}%</span>
+                                </div>
+                            </div>
+                            <div class="product-body">
+                                <p class="product-category">{{ product.category.all.0 }}</p>
+                                <h3 class="product-name"><a href="#">{{ product.title }}</a></h3>
+                                <h4 class="product-price">${{ product.price }}
+                                    <del class="product-old-price">${{ product.price }}</del>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div align="center"><h5 class="btn btn-warning">Nothing founded</h5></div>
+                {% endfor %}
+                <!-- /product -->
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /Section -->
+
+    <!-- NEWSLETTER -->
+    <div id="newsletter" class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="newsletter">
+                        <p>Sign Up for the <strong>NEWSLETTER</strong></p>
+                        <form>
+                            <input class="input" type="email" placeholder="Enter Your Email">
+                            <button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+                        </form>
+                        <ul class="newsletter-follow">
+                            <li>
+                                <a href="#"><i class="fa fa-facebook"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-twitter"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-instagram"></i></a>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-pinterest"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <template data-replyform-template id="reply-form">
+        <form class="reply_form" onclick="removeForm(this)"
+              onsubmit="submitReply(event, this, {{ product.id }})">
+            {% csrf_token %}
+            <div class="container" onclick="stopPropagation(event)">
+                {{ review_form.parent_id }}
+                <textarea name="body" id="reply-text" cols="30" rows="7"
+                          placeholder="Your Reply"></textarea>
+                <Button>Send</Button>
+            </div>
+        </form>
+    </template>
+{% endblock %}
+

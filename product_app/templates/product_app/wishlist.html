@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Cart Start -->
+    <div class="container-fluid" id="product-div">
+        <div class="row px-xl-5">
+            <div class="col-lg-8 table-responsive mb-5">
+                <table class="table table-light table-borderless table-hover text-center mb-0">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>Products</th>
+                        <th>Price</th>
+                        <th>Remove</th>
+                    </tr>
+                    </thead>
+                    <tbody class="align-middle">
+                    {% for product in wishlist_products %}
+                        <tr>
+                            <td class="align-middle"><img src="{{ product.image.url }}" alt=""
+                                                          style="width: 70px; height: 70px;"> {{ product.title }}
+                            </td>
+                            <td class="align-middle">${{ product.price }}</td>
+
+                            <td class="align-middle">
+                                <form action="{% url "products_app:remove_wishlists_products" product.id %}"
+                                      id="{{ product.id }}">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fa fa-times"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <script>
+                            $('#{{ product.id }}').submit(function (e) {
+                                e.preventDefault();
+
+                                $.ajax({
+                                    data: $(this).serialize(),
+                                    method: $(this).attr("method"),
+                                    url: $(this).attr("action"),
+                                    dataType: 'json',
+
+                                    beforeSend: function () {
+                                        console.log("Unliking product...");
+                                    },
+                                    success: function (response) {
+                                        console.log("Product Unliked successfully!");
+                                        ``
+                                        if (response.bool === true) {
+                                            $("#product-div").html(response.data)
+                                            $("#liked-products").html(response.likedproducts)
+                                        }
+                                    }
+                                })
+                            })
+                        </script>
+                    {% empty %}
+                        <br><br>
+                        <div align="center"><a href="{% url "products_app:store_page" %}" class="btn btn-danger"
+                                               style="font-weight: bold; font-size: xx-large">
+                            You have not added any product to your wishlist ;(</a></div>
+                        <br><br>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
