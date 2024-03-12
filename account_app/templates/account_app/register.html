@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <br><br>
+    <div align="center">
+        <h1>Register Page</h1>
+        <hr>
+
+        {% if form.non_field_errors %}
+            <ul>
+                <li style="color: red; font-weight: bold; font-size: larger;">{{ form.non_field_errors }}</li>
+            </ul>
+        {% endif %}
+        <br>
+        <form action="{% url 'account_app:register' %}" method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="fieldWrapper">
+                    <span style="color: purple;">{{ field.label_tag }}</span> {{ field }}
+                    <br>
+                </div>
+            {% endfor %}
+            <br>
+            <button class="btn-danger btn-lg" type="submit">Register</button>
+        </form>
+        <br>
+        <a href="{% url "account_app:login" %}">You have an account?</a>
+    </div>
+    <br><br><br><br><br><br>
+{% endblock %}

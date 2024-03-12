@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <!-- SECTION -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <!-- Product main img -->
+                <div class="col-md-5 col-md-push-2">
+                    <div id="product-main-img">
+                        {% for image in product.images.all %}
+                            <div class="product-preview">
+                                <img src="{{ image.image.url }}" alt="">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- /Product main img -->
+
+                <!-- Product thumb imgs -->
+                <div class="col-md-2  col-md-pull-5">
+                    <div id="product-imgs">
+                        {% for image in product.images.all %}
+                            <div class="product-preview">
+                                <img src="{{ image.image.url }}" alt="">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- /Product thumb imgs -->
+
+                <!-- Product details -->
+                <div class="col-md-5">
+                    <div class="product-details">
+                        <h2 class="product-name">{{ product.title }}</h2>
+                        <div>
+                            <div class="product-rating">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                            <a class="review-link" href="#">10 Review(s) | Add your review</a>
+                        </div>
+                        <div>
+                            {% if product.discount %}
+                                <h3 class="product-price">${{ product.discount_price }}
+                                    <del class="product-old-price">${{ product.price }}</del>
+                                </h3>
+                            {% else %}
+                                <h3 class="product-price">${{ product.price }}
+                                </h3>
+                            {% endif %}
+                            {% if product.in_stock %}
+                                <span class="product-available">In Stock :)</span>
+                            {% else %}
+                                <span class="product-unavailable">Out of Stock :(</span>
+                            {% endif %}
+                        </div>
+                        <p>{{ product.description }}</p>
+
+                        <form action="{% url "cart_app:add-to-cart" product.id %}" method="POST" id="add-to-cart">
+                            {% csrf_token %}
+                            <div class="product-options">
+                                {#                            <label>#}
+                                {#                                Size#}
+                                {#                                <select class="input-select">#}
+                                {#                                    <option value="0">X</option>#}
+                                {#                                </select>#}
+                                {#                            </label>#}
+                                <label>
+                                    Color
+                                    <select class="input-select" name="color">
+                                        {% for color in product.colors.all %}
+                                            <option class="form-control"
+                                                    value="{{ color.title }}">{{ color.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div class="add-to-cart">
+                                <div class="qty-label">
+                                    Qty
+                                    <div class="input-number">
+                                        <input type="number" name="quantity" value="1">
+                                        <span class="qty-up">+</span>
+                                        <span class="qty-down">-</span>
+                                    </div>
+                                </div>
+                                <button class="add-to-cart-btn" id="add-to-cart-button"><i
+                                        class="fa fa-shopping-cart"></i> add to cart
+                                </button>
+                            </div>
+                        </form>
+
+                        <ul class="product-btns">
+                            <li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
+                            <li><a href="#"><i class="fa fa-exchange"></i> add to compare</a></li>
+                        </ul>
+
+                        <ul class="product-links">
+                            <li>Category:</li>
+                            {% for category in product.category.all %}
+                                <li><a href="#">{{ category.title }}</a></li>
+                            {% endfor %}
+                        </ul>
+
+                        <ul class="product-links">
+                            <li>Share:</li>
+                            <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+                            <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                            <li><a href="#"><i class="fa fa-google-plus"></i></a></li>
+                            <li><a href="#"><i class="fa fa-envelope"></i></a></li>
+                        </ul>
+
+                    </div>
+                </div>
+                <!-- /Product details -->
+
+                <!-- Product tab -->
+                <div class="col-md-12">
+                    <div id="product-tab">
+                        <!-- product tab nav -->
+                        <ul class="tab-nav">
+                            <li class="active"><a data-toggle="tab" href="#tab1">Description</a></li>
+                            <li><a data-toggle="tab" href="#tab2">Details</a></li>
+                            <li><a data-toggle="tab" href="#tab3">Reviews ({{ product.comments.all|length }})</a></li>
+                        </ul>
+                        <!-- /product tab nav -->
+
+                        <!-- product tab content -->
+                        <div class="tab-content">
+                            <!-- tab1  -->
+                            <div id="tab1" class="tab-pane fade in active">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <p>{{ product.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /tab1  -->
+
+                            <!-- tab2  -->
+                            <div id="tab2" class="tab-pane fade in">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        {% for detail in product.specifications.all %}
+                                            <p>{{ detail }}</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /tab2  -->
+
+                            <!-- tab3  -->
+                            <div id="tab3" class="tab-pane fade in">
+                                <div class="row">
+                                    <!-- Rating -->
+                                    <div class="col-md-3">
+                                        <div id="rating">
+                                            <div class="rating-avg">
+                                                <span>{{ product.average_review }}</span>
+                                                <div class="rating-stars">
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star"></i>
+                                                    <i class="fa fa-star-o"></i>
+                                                </div>
+                                            </div>
+                                            <ul class="rating">
+                                                <li>
+                                                    <div class="rating-stars">
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                    </div>
+                                                    <div class="rating-progress">
+                                                        <div style="width: 80%;"></div>
+                                                    </div>
+                                                    <span class="sum">3</span>
+                                                </li>
+                                                <li>
+                                                    <div class="rating-stars">
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                    </div>
+                                                    <div class="rating-progress">
+                                                        <div style="width: 60%;"></div>
+                                                    </div>
+                                                    <span class="sum">2</span>
+                                                </li>
+                                                <li>
+                                                    <div class="rating-stars">
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                    </div>
+                                                    <div class="rating-progress">
+                                                        <div></div>
+                                                    </div>
+                                                    <span class="sum">0</span>
+                                                </li>
+                                                <li>
+                                                    <div class="rating-stars">
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                    </div>
+                                                    <div class="rating-progress">
+                                                        <div></div>
+                                                    </div>
+                                                    <span class="sum">0</span>
+                                                </li>
+                                                <li>
+                                                    <div class="rating-stars">
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                    </div>
+                                                    <div class="rating-progress">
+                                                        <div></div>
+                                                    </div>
+                                                    <span class="sum">0</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <!-- /Rating -->
+
+                                    <!-- Reviews -->
+                                    <div class="col-md-6 comment-col">
+                                        <div id="reviews">
+                                            <ul class="comments">
+                                                <div class="container">
+
+                                                    <div class="comment">
+                                                        {% for comment in product.comments.all %}
+                                                            {% if comment.parent is None %}
+                                                                <div class="cmnt--self">
+                                                                    <div class="cmnt--header">
+                                                                        <div class="cmnt-img">
+                                                                            <img src="{% static "img/user.jpg" %}"
+                                                                                 alt="">
+                                                                        </div>
+                                                                        <span class="cmnt--name">
+																		{{ comment.author.username }}
+																	</span>
+                                                                        <span class="cmnt--date">
+																		{{ comment.created_at|date }}
+																	</span>
+                                                                        <button type="button" class="cmnt--replybtn"
+                                                                                onclick="set_value({{ comment.id }})">
+                                                                            reply
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="cmnt--body">
+                                                                        <p>
+                                                                            {{ comment.text }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            {% else %}
+                                                                <div class="cmnt--reply">
+                                                                    <div class="cmnt--header">
+                                                                        <div class="cmnt-img">
+                                                                            <img src="{% static "img/user.jpg" %}"
+                                                                                 alt="">
+                                                                        </div>
+                                                                        <span class="cmnt--name">
+																		{{ comment.author.username }} <span
+                                                                                style="color: blue; font-weight: bold;">
+                                                                            @{{ comment.parent.author.username }}</span>
+																	</span>
+                                                                        <span class="cmnt--date">
+																		{{ comment.created_at|date }}
+																	</span>
+                                                                        <button type="button" class="cmnt--replybtn"
+                                                                                onclick="set_value({{ comment.id }})">
+                                                                            reply
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="cmnt--body">
+                                                                        <p>
+                                                                            {{ comment.text }}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+
+
+                                                </div>
+                                            </ul>
+                                            <ul class="reviews-pagination">
+                                                <li class="active">1</li>
+                                                <li><a href="#">2</a></li>
+                                                <li><a href="#">3</a></li>
+                                                <li><a href="#">4</a></li>
+                                                <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <!-- /Reviews -->
+
+                                    <!-- Review Form -->
+                                    <div class="col-md-3">
+                                        <div id="review-form">
+                                            <form class="review-form" method="POST"
+                                                  action="{% url 'product_app:add_comment' product.id %}">
+                                                {% csrf_token %}
+                                                <textarea class="input" name="text"
+                                                          placeholder="Your Review"></textarea>
+                                                <input type="hidden" name="parent_id" id="parent_id">
+                                                <div class="input-rating">
+                                                    <span>Your Rating: </span>
+                                                    <div class="stars">
+                                                        <input id="star5" name="rating" value="5" type="radio"><label
+                                                            for="star5"></label>
+                                                        <input id="star4" name="rating" value="4" type="radio"><label
+                                                            for="star4"></label>
+                                                        <input id="star3" name="rating" value="3" type="radio"><label
+                                                            for="star3"></label>
+                                                        <input id="star2" name="rating" value="2" type="radio"><label
+                                                            for="star2"></label>
+                                                        <input id="star1" name="rating" value="1" type="radio"><label
+                                                            for="star1"></label>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="primary-btn">Submit</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <!-- /Review Form -->
+                                </div>
+                            </div>
+                            <!-- /tab3  -->
+                        </div>
+                        <!-- /product tab content  -->
+                    </div>
+                </div>
+                <!-- /product tab -->
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /SECTION -->
+
+    <!-- Section -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+
+                <div class="col-md-12">
+                    <div class="section-title text-center">
+                        <h3 class="title">Related Products</h3>
+                    </div>
+                </div>
+
+                <!-- product -->
+                <div class="col-md-3 col-xs-6">
+                    <div class="product">
+                        <div class="product-img">
+                            <img src="./img/product01.png" alt="">
+                            <div class="product-label">
+                                <span class="sale">-30%</span>
+                            </div>
+                        </div>
+                        <div class="product-body">
+                            <p class="product-category">Category</p>
+                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
+                            <h4 class="product-price">$980.00
+                                <del class="product-old-price">$990.00</del>
+                            </h4>
+                            <div class="product-rating">
+                            </div>
+                            <div class="product-btns">
+                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
+                                </button>
+                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
+                                </button>
+                                <button class="quick-view"><i class="fa fa-eye"></i><span
+                                        class="tooltipp">quick view</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-to-cart">
+                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /product -->
+
+                <!-- product -->
+                <div class="col-md-3 col-xs-6">
+                    <div class="product">
+                        <div class="product-img">
+                            <img src="./img/product02.png" alt="">
+                            <div class="product-label">
+                                <span class="new">NEW</span>
+                            </div>
+                        </div>
+                        <div class="product-body">
+                            <p class="product-category">Category</p>
+                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
+                            <h4 class="product-price">$980.00
+                                <del class="product-old-price">$990.00</del>
+                            </h4>
+                            <div class="product-rating">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                            <div class="product-btns">
+                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
+                                </button>
+                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
+                                </button>
+                                <button class="quick-view"><i class="fa fa-eye"></i><span
+                                        class="tooltipp">quick view</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-to-cart">
+                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /product -->
+
+                <div class="clearfix visible-sm visible-xs"></div>
+
+                <!-- product -->
+                <div class="col-md-3 col-xs-6">
+                    <div class="product">
+                        <div class="product-img">
+                            <img src="./img/product03.png" alt="">
+                        </div>
+                        <div class="product-body">
+                            <p class="product-category">Category</p>
+                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
+                            <h4 class="product-price">$980.00
+                                <del class="product-old-price">$990.00</del>
+                            </h4>
+                            <div class="product-rating">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                            <div class="product-btns">
+                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
+                                </button>
+                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
+                                </button>
+                                <button class="quick-view"><i class="fa fa-eye"></i><span
+                                        class="tooltipp">quick view</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-to-cart">
+                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /product -->
+
+                <!-- product -->
+                <div class="col-md-3 col-xs-6">
+                    <div class="product">
+                        <div class="product-img">
+                            <img src="./img/product04.png" alt="">
+                        </div>
+                        <div class="product-body">
+                            <p class="product-category">Category</p>
+                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
+                            <h4 class="product-price">$980.00
+                                <del class="product-old-price">$990.00</del>
+                            </h4>
+                            <div class="product-rating">
+                            </div>
+                            <div class="product-btns">
+                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
+                                </button>
+                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
+                                </button>
+                                <button class="quick-view"><i class="fa fa-eye"></i><span
+                                        class="tooltipp">quick view</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="add-to-cart">
+                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /product -->
+
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /Section -->
+    <template data-replyform-template>
+        <div class="reply_form" onclick="removeForm(this)">
+            <div class="container" onclick="stopPropagation(event)">
+                <input type="text" name="replyerName" id="replyer-name" placeholder="Your Name">
+                <input type="hidden" name="parent_id" id="parent_id">
+                <input type="email" name="replyerEmail" id="replyer-email" placeholder="Your Email">
+                <textarea name="replyText" id="reply-text" cols="30" rows="7" placeholder="Your Reply"></textarea>
+                <Button>Send</Button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        function set_value(id) {
+            setTimeout(() => document.getElementById('parent_id').value = id, 0);
+            console.log(id);
+        }
+    </script>
+{% endblock %}
