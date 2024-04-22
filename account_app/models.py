@@ -1,9 +1,10 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, username=None, email=None, password=None):
+    def create_user(self, username, email=None, password=None):
         """
         Creates and saves a User with the given email, date of
         birth and password.
@@ -46,6 +47,8 @@ class User(AbstractBaseUser):
         max_length=255,
         unique=True
     )
+    order_count = models.IntegerField(default=0, null=True, blank=True)
+    total_buy = models.FloatField(default=0, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 

@@ -12,10 +12,22 @@
                 <li style="color: red; font-weight: bold; font-size: larger;">{{ form.non_field_errors }}</li>
             </ul>
         {% endif %}
+        {% if form2.non_field_errors %}
+            <ul>
+                <li style="color: red; font-weight: bold; font-size: larger;">{{ form.non_field_errors }}</li>
+            </ul>
+        {% endif %}
         <br>
         <form action="{% url 'account_app:login' %}" method="POST">
             {% csrf_token %}
             {% for field in form %}
+                <div class="fieldWrapper">
+                    <span style="color: purple;">{{ field.label_tag }}</span> {{ field }}
+                    <br>
+                </div>
+            {% endfor %}
+            <br>
+            {% for field in form2 %}
                 <div class="fieldWrapper">
                     <span style="color: purple;">{{ field.label_tag }}</span> {{ field }}
                     <br>

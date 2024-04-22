@@ -59,8 +59,6 @@ class Product(models.Model):
     discount = models.BooleanField(default=False, editable=False)
     slug = models.SlugField(unique=True, null=True, blank=True, allow_unicode=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    rate = models.IntegerField(null=True, blank=True, default=0)
-    likes = models.ManyToManyField(Ip, related_name="liked_posts")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,13 +67,6 @@ class Product(models.Model):
         else:
             self.discount = False
 
-        review = Comment.objects.filter(product=self).aggregate(reviews=Avg("rating"))
-        avg = 0
-        if review['reviews'] is not None:
-            avg = float(review['reviews'])
-            if avg:
-                self.rate = avg
-
     def get_absolute_url(self):
         return reverse("product_app:product_detail", kwargs={"slug": self.slug})
 
@@ -83,7 +74,6 @@ class Product(models.Model):
             self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.slug = slugify(self.title, allow_unicode=True)
-        # self.after_discount = self.discount_price()
         super(Product, self).save()
 
     def __str__(self):
@@ -136,3 +126,11 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.author.username} - {self.text[:20]}"
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_likes")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_likes")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.title}"

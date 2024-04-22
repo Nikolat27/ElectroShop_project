@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div id="breadcrumb" class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <div class="row">
+                <div class="col-md-12">
+                    <h3 class="breadcrumb-header">Checkout</h3>
+                    <ul class="breadcrumb-tree">
+                        <li><a href="{% url "home_app:main" %}">Home</a></li>
+                        <li><a href="{% url "cart_app:cart_page" %}">Cart</a></li>
+                        <li class="active">Checkout</li>
+                        <li><a href="{% url "cart_app:orders" %}">Orders</a></li>
+                    </ul>
+                </div>
+            </div>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /BREADCRUMB -->
+
+    <!-- SECTION -->
+    <div class="section">
+        <!-- container -->
+        <div class="container">
+            <!-- row -->
+            <form action="{% url "cart_app:make_order" %}" method="POST">
+                {% csrf_token %}
+                <div class="row">
+
+                    <div class="col-md-7">
+                        <!-- Billing Details -->
+                        <div class="billing-details">
+                            <div class="section-title">
+                                <h3 class="title">Billing address</h3>
+                            </div>
+                            <div class="form-group">
+                                <input class="input" type="text" name="fname" placeholder="First Name">
+                            </div>
+                            <div class="form-group">
+                                <input class="input" type="text" name="lname" placeholder="Last Name">
+                            </div>
+                            <div class="form-group">
+                                <input class="input" type="email" name="email" placeholder="Email">
+                            </div>
+
+                            <div class="form-group">
+                                <select id="province-select" class="input" name="province">
+                                    <option>Select a Province</option>
+                                    {% for province in provinces %}
+                                        <option value="{{ province.name }}">{{ province.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <select class="input" id="city-select" name="city">
+                                    <option value="">Select a City</option>
+                                    {% for city in cities %}
+                                        <option value="{{ city.name }}">{{ city.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <input class="input" type="text" name="address" placeholder="Address">
+                            </div>
+                            <div class="form-group">
+                                <input class="input" type="number" name="postal_code"
+                                       placeholder="Postal Code Example: 1231212">
+                            </div>
+                            <div class="form-group">
+                                <input class="input" type="tel" name="phone_number" placeholder="Telephone">
+                            </div>
+                        </div>
+                        <!-- /Billing Details -->
+
+                        <!-- Shiping Details -->
+                        {#                    <div class="shiping-details">#}
+                        {#                        <div class="section-title">#}
+                        {#                            <h3 class="title">Shiping address</h3>#}
+                        {#                        </div>#}
+                        {#                        <div class="input-checkbox">#}
+                        {#                            <input type="checkbox" id="shiping-address">#}
+                        {#                            <label for="shiping-address">#}
+                        {#                                <span></span>#}
+                        {#                                Ship to a diffrent address?#}
+                        {#                            </label>#}
+                        {#                            <div class="caption">#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="text" name="first-name" placeholder="First Name">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="text" name="last-name" placeholder="Last Name">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="email" name="email" placeholder="Email">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="text" name="address" placeholder="Address">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="text" name="city" placeholder="City">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="text" name="country" placeholder="Country">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="text" name="zip-code" placeholder="ZIP Code">#}
+                        {#                                </div>#}
+                        {#                                <div class="form-group">#}
+                        {#                                    <input class="input" type="tel" name="tel" placeholder="Telephone">#}
+                        {#                                </div>#}
+                        {#                            </div>#}
+                        {#                        </div>#}
+                        {#                    </div>#}
+                        <!-- /Shiping Details -->
+
+                        <!-- Order notes -->
+                        <div class="order-notes">
+                            <textarea class="input" name="optional_notes"
+                                      placeholder="Order Notes (Optional)"></textarea>
+                        </div>
+                        <input type="hidden" name="subtotal" value="{{ cart_total_price }}">
+                        <!-- /Order notes -->
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="col-md-5 order-details">
+                        {#                        <div class="section-title text-center">#}
+                        {#                            <label style="font-size: x-large" for="coupon_code">Discount Coupon</label>#}
+                        {#                            <br><br>#}
+                        {#                            <input type="text"#}
+                        {#                                   class="form-control"#}
+                        {#                                   id="coupon_code"#}
+                        {#                                   placeholder="Enter a valid discount coupon code...">#}
+                        {#                            <br>#}
+                        {#                            <button onclick="apply_coupon()" type="submit" class="btn-danger btn-lg">Apply Coupon#}
+                        {#                            </button>#}
+                        {#                        </div>#}
+                        {#                        <hr>#}
+                        <div class="section-title text-center">
+                            <h3 class="title">Your Order</h3>
+                        </div>
+                        <div class="order-summary">
+                            <div class="order-col">
+                                <div><strong>PRODUCT</strong></div>
+                                <div><strong>TOTAL</strong></div>
+                            </div>
+                            <div class="order-products">
+                                {% for item in cart %}
+                                    <div class="order-col">
+                                        <div>{{ item.quantity }}x {{ item.product.title }}
+                                        </div>
+                                        <div>${{ item.total_item_price }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="order-col">
+                                <div>Shiping</div>
+                                <div><strong>FREE</strong></div>
+                            </div>
+                            <div class="order-col">
+                                <div><strong>TOTAL</strong></div>
+                                <div><strong class="order-total">${{ cart_total_price }}</strong></div>
+                            </div>
+                        </div>
+                        <div class="payment-method">
+                            <div class="input-radio">
+                                <input type="radio" name="payment" id="payment-1">
+                                <label for="payment-1">
+                                    <span></span>
+                                    Paypal System
+                                </label>
+                                <div class="caption">
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                                        incididunt ut labore et dolore magna aliqua.</p>
+                                </div>
+                            </div>
+                            <div class="input-radio">
+                                <input type="radio" name="payment" id="payment-2">
+                                <label for="payment-2">
+                                    <span></span>
+                                    ZarinPall Gateway
+                                </label>
+                                <div class="caption">
+                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                                        incididunt ut labore et dolore magna aliqua.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-checkbox">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">
+                                <span></span>
+                                I've read and accept the <a href="#">terms & conditions</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="primary-btn order-submit">Place order</button>
+                    </div>
+                    <!-- /Order Details -->
+                </div>
+            </form>
+            <!-- /row -->
+        </div>
+        <!-- /container -->
+    </div>
+    <!-- /SECTION -->
+{% endblock %}

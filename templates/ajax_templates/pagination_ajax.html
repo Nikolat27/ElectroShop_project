@@ -1,0 +1,21 @@
+{% load templatetags %}
+<ul class="store-pagination">
+    {% if products.has_previous %}
+        <li><a onclick="ajaxPagination('page={{ products.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                class="fa fa-angle-left"></i></a>
+        </li>
+    {% endif %}
+    {% for x in products.paginator.page_range %}
+        {% if products.number == x %}
+            <li class="active"><a style="color: white;" onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
+        {% else %}
+            <li class=""><a onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
+        {% endif %}
+    {% endfor %}
+    {% if products.has_next %}
+        <li>
+            <a onclick="ajaxPagination('page={{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                    class="fa fa-angle-right"></i></a>
+        </li>
+    {% endif %}
+</ul>

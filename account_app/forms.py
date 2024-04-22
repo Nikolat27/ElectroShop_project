@@ -1,7 +1,9 @@
+from captcha.fields import CaptchaField
 from django import forms
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, authenticate
 from .models import User
 from django.core.exceptions import ValidationError
+from django_recaptcha.fields import ReCaptchaField
 
 
 class RegisterForm(forms.Form):
@@ -66,9 +68,17 @@ class LoginForm(forms.Form):
         username = cleaned_data['username']
         password = cleaned_data['password']
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(request=request, username=username, password=password)
 
         if user is not None:
             login(request, user=user, backend='django.contrib.auth.backends.ModelBackend')
         else:
             raise ValidationError("Your username or password is incorrect")
+
+
+class CaptchaTestForm(forms.Form):
+    captcha_field = CaptchaField()
+
+
+class FormWithCaptcha(forms.Form):
+    captcha = ReCaptchaField()
