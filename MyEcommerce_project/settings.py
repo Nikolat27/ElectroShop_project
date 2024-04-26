@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-gm#r^_@rb3dv8!isizs6_ed4g60pddnw3xb8@0_--06*wim&o4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['185.8.174.180', 'samalizadeh.ir', 'www.samalizadeh.ir']
 
 # Application definition
 
@@ -97,8 +97,12 @@ WSGI_APPLICATION = 'MyEcommerce_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'electroShop_db',
+        'USER': 'djangoAdmin',
+        'PASSWORD': '235691@Gg',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
 
@@ -142,11 +146,13 @@ SANDBOX = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 AUTH_USER_MODEL = "account_app.User"
-STATIC_URL = 'static/'
-MEDIA_URL = "media/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "assets")]
 
 # Default primary key field type
