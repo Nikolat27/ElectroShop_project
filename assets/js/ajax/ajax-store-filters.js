@@ -1,9 +1,11 @@
 $(document).ready(function () {
-    $(".filter-checkbox, #priceFilterBtn, .sort-by, .show-by").on('click', function () {
+    $(".filter-checkbox, #priceFilterBtn, .sort-by, .show-by, .search-btn").on('click', function () {
         let filter_object = {};
+        let price_slider = $("#price-slider").val
 
         let minPrice = $("#price-min").val()
         let maxPrice = $("#price-max").val()
+        let q = $("#q").val()
         let sortBy = $("#sort-input-select").val() //Notice this input-select must be an "ID" not class!
         let show = $("#show-input-select").val()  //This too!
 
@@ -11,6 +13,7 @@ $(document).ready(function () {
         filter_object.maxPrice = maxPrice;
         filter_object.sortBy = sortBy;
         filter_object.show = show;
+        filter_object.q = q;
 
         $(".filter-checkbox").each(function (index, ele) {
             let filter_value = $(this).val();

@@ -16,10 +16,10 @@ def get_ip(request):
 
 
 @register.filter
-def is_liked(request, pk):  # Seeing that you have liked a product or No!
+def is_liked(request, pk):  # Checking that you have liked a product or No!
     user = request.user
     product = Product.objects.get(id=pk)
-    is_liked = Like.objects.filter(product=product, user=user)
+    is_liked = Like.objects.filter(product=product, user=user).exists()
     if is_liked:
         return True
     else:
@@ -58,3 +58,8 @@ def x(value):
         return "request.GET.category[]"
     else:
         return False
+
+
+@register.filter
+def range_loop(start, end):
+    return range(start, end)

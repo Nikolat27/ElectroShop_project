@@ -26,50 +26,23 @@
                     </h4>
                 {% endif %}
                 <div class="product-rating">
-                    {% if product.average_review == 5 %}
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                    {% elif product.average_review == 4 %}
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                    {% elif product.average_review == 3 %}
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
-                    {% elif product.average_review == 2 %}
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
-                    {% elif product.average_review == 1 %}
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
-                        <i class="fa fa-star-o"></i>
-                    {% endif %}
+                    {% for i in 1|range_loop:6 %}
+                        {% if i <= product.average_review %}
+                            <i class="fa fa-star"></i>
+                        {% else %}
+                            <i class="fa fa-star-o"></i>
+                        {% endif %}
+                    {% endfor %}
                 </div>
                 <div class="product-btns">
                     <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
                             class="add-to-wishlist"><i
-                            class="{% if request|is_liked:product.id is True %}fa fa-heart-o{% else %}fa fa-heart{% endif %}"
+                            class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"
                             {# Always put endif inside the "" #}
                             id="{{ product.slug }}"></i><span
                             class="tooltipp"></span></button>
                     <span id="total-{{ product.slug }}-likes"
                           style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
-
-                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                            class="tooltipp">add to compare</span></button>
                 </div>
             </div>
             <div class="add-to-cart">

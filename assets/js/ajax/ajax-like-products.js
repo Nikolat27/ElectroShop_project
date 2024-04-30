@@ -5,14 +5,21 @@ function like(id, slug) {
     let total = document.getElementById(`total-${slug}-likes`)
 
     $.get(`/products/add_like/${id}`).then(response => {
-        if (response["response"] === "liked") {
+        if (response["response"] === "liked")
+        {
             element.className = "fa fa-heart"
             count.innerText = Number(count.innerText) + 1
             total.innerText = response['total']
-        } else {
+        }
+        else if (response["response"] === "unliked")
+        {
             element.className = "fa fa-heart-o"
             count.innerText = Number(count.innerText) - 1
             total.innerText = response['total']
+        }
+        else if (response["response"] === "anonymous")
+        {
+            total.innerText = 'You Gotta be Logged in';
         }
     })
 }

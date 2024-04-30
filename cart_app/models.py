@@ -1,6 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from account_app.models import User
 from product_app.models import Product
 from datetime import datetime
@@ -22,7 +22,6 @@ class Cart(models.Model):
     @classmethod
     def add(self, user, product_id, color, quantity):
         product = get_object_or_404(Product, id=product_id)
-
         have_cart = False
         try:
             user_cart = Cart.objects.get(user=user, product=product, color=color)

@@ -55,16 +55,19 @@ def cart_page(request):
 
 
 def add_cart(request, pk):
-    if request.method == "POST":
-        user = request.user
-        product_id = pk
-        color = request.POST.get("color")
-        quantity = request.POST.get("quantity")
+    if request.user.is_authenticated is True:
+        if request.method == "POST":
+            user = request.user
+            product_id = pk
+            color = request.POST.get("color")
+            quantity = request.POST.get("quantity")
 
-        if user and product_id and color and quantity:
-            Cart.add(user=user, product_id=product_id, color=color, quantity=quantity)
-            data = ajax_template_generator(request=request, user=user)
-            return JsonResponse({"data": data, "bool": True})
+            if user and product_id and color and quantity:
+                Cart.add(user=user, product_id=product_id, color=color, quantity=quantity)
+                data = ajax_template_generator(request=request, user=user)
+                return JsonResponse({"data": data, "bool": True})
+    else:
+        print("hi")
 
 
 def cart_update(request, pk):
@@ -142,6 +145,7 @@ def make_order(request):
         return redirect("cart_app:orders")
 
 
+@login_required()
 def orders(request):
     orders = Order.objects.filter(user=request.user)
     total = 0

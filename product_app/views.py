@@ -1,5 +1,6 @@
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Max, Min
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -13,7 +14,9 @@ from product_app.models import Product, Comment, Category, Brand, Like
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, id=pk)
-    return render(request, "product_app/product_detail.html", context={"product": product})
+    related_products = Product.objects.filter(category__in=product.category.all()).order_by("-id").distinct()
+    return render(request, "product_app/product_detail.html",
+                  context={"product": product, "related_products": related_products})
 
 
 def get_ip(request):
@@ -46,9 +49,19 @@ def store_page(request):
     products = Product.objects.all().order_by("-id")
     total = Product.objects.count()
     page_number = request.GET.get("page", 1)
+    q = request.GET.get("q")
+
+    # To Get the GET method parameters
+    query_params = request.GET.copy()
 
     shownumber_options = ["1", "2"]
     sortby_options = ["Available", "New", "Popular", "Discounted"]
+
+    if q and len(q):
+        products = Product.objects.filter(title__icontains=q).order_by("-id").distinct()
+
+    max_price = Product.objects.all().aggregate(Max('price'))['price__max']
+    min_price = Product.objects.all().aggregate(Min('price'))['price__min']
 
     paginator = Paginator(products, 1)
     products = paginator.get_page(page_number)
@@ -56,7 +69,8 @@ def store_page(request):
     return render(request, "product_app/store.html",
                   context={"products": products, "brands": brands, "categories": categories, "total": total,
                            "sortBy_options": sortby_options,
-                           "showNumber_options": shownumber_options})
+                           "showNumber_options": shownumber_options, "query_params": query_params.urlencode(),
+                           "max_price": max_price, "min_price": min_price})
 
 
 def filter_data(request):
@@ -67,6 +81,7 @@ def filter_data(request):
     price_max = request.GET.get("maxPrice")
     sort = request.GET.get("sortBy")
     show = request.GET.get('show', 1)
+    q = request.GET.get("q")
     page_number = request.GET.get("page", 1)
     products = Product.objects.all().distinct()
 
@@ -76,6 +91,10 @@ def filter_data(request):
     # To Avoid many 'page' parameters
     if "page" in query_params:
         del query_params["page"]
+
+    # If user has searched sth
+    if q and len(q) > 0:
+        products = products.filter(title__icontains=q).order_by("-id").distinct()
 
     # Start Filtering
     if categories and len(categories) > 0:
@@ -126,6 +145,8 @@ def add_like(request, pk):
             Like.objects.create(product=product, user=user)
             total = Like.objects.filter(product_id=pk).aggregate(total=Count('id'))['total']
             return JsonResponse({"response": "liked", "total": total})
+    else:
+        return JsonResponse({"response": "anonymous"})
     # else:
     #     user_ip = get_ip(request)
     #     ip_check = Ip.objects.filter(ip=user_ip).exists()
@@ -150,6 +171,7 @@ def add_like(request, pk):
     #             return JsonResponse({"response": "liked", "total": total})
 
 
+@login_required
 def wishlist_page(request):
     user = request.user
     liked_products = Like.objects.filter(user=user).values("product")

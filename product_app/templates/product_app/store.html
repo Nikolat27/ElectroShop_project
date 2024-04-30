@@ -44,16 +44,15 @@
                     <div class="aside">
                         <h3 class="aside-title">Price</h3>
                         <div class="price-filter">
-                            <div id="price-slider"></div>
                             <div class="input-number price-min">
-                                <input id="price-min" type="number" name="min_price"
+                                <input id="price-min" type="number" name="min_price" value="{{ min_price }}"
                                        class="price-input">
                                 <span class="qty-up">+</span>
                                 <span class="qty-down">-</span>
                             </div>
                             <span>-</span>
                             <div class="input-number price-max">
-                                <input id="price-max" type="number" name="max_price"
+                                <input id="price-max" type="number" name="max_price" value="{{ max_price }}"
                                        class="price-input">
                                 <span class="qty-up">+</span>
                                 <span class="qty-down">-</span>
@@ -119,16 +118,12 @@
                                 </select>
                             </label>
                         </div>
-                        <ul class="store-grid">
-                            <li class="active"><i class="fa fa-th"></i></li>
-                            <li><a href="#"><i class="fa fa-th-list"></i></a></li>
-                        </ul>
+                    
                     </div>
                     <!-- /store top filter -->
 
                     <!-- store products -->
                     <div class="row" id="filteredProducts">
-                        {#                        <p class="ajaxLoader">Loading...</p>#}
                         {% for product in products %}
                             <div class="col-md-4 col-xs-6 product-box">
                                 <div class="product">
@@ -156,37 +151,13 @@
                                             </h4>
                                         {% endif %}
                                         <div class="product-rating">
-                                            {% if product.average_review == 5 %}
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                            {% elif product.average_review == 4 %}
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star-o"></i>
-                                            {% elif product.average_review == 3 %}
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                            {% elif product.average_review == 2 %}
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                            {% elif product.average_review == 1 %}
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                            {% endif %}
+                                            {% for i in 1|range_loop:6 %}
+                                                {% if i <= product.average_review %}
+                                                    <i class="fa fa-star"></i>
+                                                {% else %}
+                                                    <i class="fa fa-star-o"></i>
+                                                {% endif %}
+                                            {% endfor %}
                                         </div>
                                         <div class="product-btns">
                                             <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
@@ -197,16 +168,20 @@
                                                     class="tooltipp"></span></button>
                                             <span id="total-{{ product.slug }}-likes"
                                                   style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
-
-                                            <button class="add-to-compare"><i class="fa fa-exchange"></i><span
-                                                    class="tooltipp">add to compare</span></button>
                                         </div>
                                     </div>
                                     <div class="add-to-cart">
-                                        <button onclick="add_to_cart({{ product.id }})" class="add-to-cart-btn"><i
-                                                class="fa fa-shopping-cart"></i> add to
-                                            cart
-                                        </button>
+                                        {% if request.user.is_authenticated is True %}
+                                            <button onclick="add_to_cart({{ product.id }})" class="add-to-cart-btn"><i
+                                                    class="fa fa-shopping-cart"></i> add to
+                                                cart
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="add-to-cart-btn"><a style="color: white;"
+                                                                                             href="{% url "account_app:login" %}">Pls
+                                                Login</a>
+                                            </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +193,6 @@
                     </div>
                     <!-- /store products -->
                 </div>
-
                 <!-- store bottom filter -->
                 <div class="store-filter clearfix" id="pagination_products">
                     <ul class="store-pagination">

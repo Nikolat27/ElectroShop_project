@@ -18,4 +18,7 @@ def context_processors(request):
 
         return {"cart": cart1, "cart_length": cart_length, "cart_total_price": cart_total_price, "total_len": total_len}
     else:
-        return {"hi": "hi"}
+        cart_length = 0
+        cart_total_price = 0
+        total_len = 0
+        return {"cart_length": cart_length, "cart_total_price": cart_total_price, "total_len": total_len}
