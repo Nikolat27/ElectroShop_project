@@ -483,7 +483,7 @@ textarea.input {
     margin-right: -4px;
 }
 
-.header-search form .search-btn {
+.header-search .search-btn {
     height: 40px;
     width: 100px;
     background: #D10024;

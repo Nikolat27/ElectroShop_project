@@ -1,0 +1,60 @@
+{% load templatetags %}
+{% for product in products %}
+    <div class="col-md-4 col-xs-6 product-box">
+        <div class="product">
+            <div class="product-img">
+                <img src="{{ product.main_image.url }}" width="200px" height="300px" alt="">
+                {% if product.discount is True %}
+                    <div class="product-label">
+                        <span class="sale">-{{ product.discount_percentage }}%</span>
+                        {# <span class="new">NEW</span>#}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="product-body">
+                <p class="product-category">{{ product.category.all.0 }}</p>
+                <h3 class="product-name"><a
+                        href="{% url "product_app:product_detail" product.id %}">{{ product.title }}
+                </a>
+                </h3>
+                {% if product.discount %}
+                    <h4 class="product-price">${{ product.discount_price }}
+                        <del class="product-old-price">${{ product.price }}</del>
+                    </h4>
+                {% else %}
+                    <h4 class="product-price">${{ product.price }}
+                    </h4>
+                {% endif %}
+                <div class="product-rating">
+                    {% for i in 1|range_loop:6 %}
+                        {% if i <= product.average_review %}
+                            <i class="fa fa-star"></i>
+                        {% else %}
+                            <i class="fa fa-star-o"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="product-btns">
+                    <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
+                            class="add-to-wishlist"><i
+                            class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"
+                            {# Always put endif inside the "" #}
+                            id="{{ product.slug }}"></i><span
+                            class="tooltipp"></span></button>
+                    <span id="total-{{ product.slug }}-likes"
+                          style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
+                </div>
+            </div>
+            <div class="add-to-cart">
+                <button onclick="add_to_cart({{ product.id }})" class="add-to-cart-btn"><i
+                        class="fa fa-shopping-cart"></i> add to
+                    cart
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix visible-sm visible-xs"></div>
+{% empty %}
+    <h2 style="color: red; font-size: large">No products Yet!</h2>
+{% endfor %}

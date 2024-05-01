@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load templatetags %}
 {% load static %}
 
 {% block content %}
@@ -100,14 +101,19 @@
                         </form>
 
                         <ul class="product-btns">
-                            <li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
-                            <li><a href="#"><i class="fa fa-exchange"></i> add to compare</a></li>
+                            <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
+                                    class="add-to-wishlist"><i
+                                    class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"
+                                    id="{{ product.slug }}"></i><span
+                                    class="tooltipp"></span></button>
+                            <span id="total-{{ product.slug }}-likes"
+                                  style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
                         </ul>
 
                         <ul class="product-links">
                             <li>Category:</li>
                             {% for category in product.category.all %}
-                                <li><a href="#">{{ category.title }}</a></li>
+                                <li><a>{{ category.title }}</a></li>
                             {% endfor %}
                         </ul>
 
@@ -167,11 +173,13 @@
                                             <div class="rating-avg">
                                                 <span>{{ product.average_review }}</span>
                                                 <div class="rating-stars">
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star"></i>
-                                                    <i class="fa fa-star-o"></i>
+                                                    {% for i in 1|range_loop:6 %}
+                                                        {% if i <= product.average_review %}
+                                                            <i class="fa fa-star"></i>
+                                                        {% else %}
+                                                            <i class="fa fa-star-o"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
                                                 </div>
                                             </div>
                                             <ul class="rating">
@@ -377,149 +385,48 @@
                         <h3 class="title">Related Products</h3>
                     </div>
                 </div>
-
                 <!-- product -->
-                <div class="col-md-3 col-xs-6">
-                    <div class="product">
-                        <div class="product-img">
-                            <img src="./img/product01.png" alt="">
-                            <div class="product-label">
-                                <span class="sale">-30%</span>
+                {% for product in related_products %}
+                    <div class="col-md-3 col-xs-6">
+                        <div class="product">
+                            <div class="product-img">
+                                <img src="{{ product.main_image.url }}" width="250" height="200" alt="">
+                                {% if product.discount is True %}
+                                    <div class="product-label">
+                                        <span class="sale">-{{ product.discount_percentage }}%</span>
+                                    </div>
+                                {% endif %}
                             </div>
-                        </div>
-                        <div class="product-body">
-                            <p class="product-category">Category</p>
-                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                            <h4 class="product-price">$980.00
-                                <del class="product-old-price">$990.00</del>
-                            </h4>
-                            <div class="product-rating">
+                            <div class="product-body">
+                                <p class="product-category">{{ product.category.all.0 }}</p>
+                                <h3 class="product-name"><a
+                                        href="{% url "product_app:product_detail" product.id %}">{{ product.title }}</a>
+                                </h3>
+                                {% if product.discount is True %}
+                                    <h4 class="product-price">${{ product.discount_price }}
+                                        <del class="product-old-price">${{ product.price }}</del>
+                                    </h4>
+                                {% else %}
+                                    <h4 class="product-price">${{ product.price }}
+                                    </h4>
+                                {% endif %}
+                                <div class="product-rating">
+                                </div>
+                                <div class="product-btns">
+                                    <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
+                                            class="add-to-wishlist"><i
+                                            class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"
+                                            {# Always put endif inside the "" #}
+                                            id="{{ product.slug }}"></i><span
+                                            class="tooltipp"></span></button>
+                                    <span id="total-{{ product.slug }}-likes"
+                                          style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
+                                </div>
                             </div>
-                            <div class="product-btns">
-                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
-                                </button>
-                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
-                                </button>
-                                <button class="quick-view"><i class="fa fa-eye"></i><span
-                                        class="tooltipp">quick view</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="add-to-cart">
-                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
                         </div>
                     </div>
-                </div>
+                {% endfor %}
                 <!-- /product -->
-
-                <!-- product -->
-                <div class="col-md-3 col-xs-6">
-                    <div class="product">
-                        <div class="product-img">
-                            <img src="./img/product02.png" alt="">
-                            <div class="product-label">
-                                <span class="new">NEW</span>
-                            </div>
-                        </div>
-                        <div class="product-body">
-                            <p class="product-category">Category</p>
-                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                            <h4 class="product-price">$980.00
-                                <del class="product-old-price">$990.00</del>
-                            </h4>
-                            <div class="product-rating">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                            </div>
-                            <div class="product-btns">
-                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
-                                </button>
-                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
-                                </button>
-                                <button class="quick-view"><i class="fa fa-eye"></i><span
-                                        class="tooltipp">quick view</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="add-to-cart">
-                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- /product -->
-
-                <div class="clearfix visible-sm visible-xs"></div>
-
-                <!-- product -->
-                <div class="col-md-3 col-xs-6">
-                    <div class="product">
-                        <div class="product-img">
-                            <img src="./img/product03.png" alt="">
-                        </div>
-                        <div class="product-body">
-                            <p class="product-category">Category</p>
-                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                            <h4 class="product-price">$980.00
-                                <del class="product-old-price">$990.00</del>
-                            </h4>
-                            <div class="product-rating">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-o"></i>
-                            </div>
-                            <div class="product-btns">
-                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
-                                </button>
-                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
-                                </button>
-                                <button class="quick-view"><i class="fa fa-eye"></i><span
-                                        class="tooltipp">quick view</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="add-to-cart">
-                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- /product -->
-
-                <!-- product -->
-                <div class="col-md-3 col-xs-6">
-                    <div class="product">
-                        <div class="product-img">
-                            <img src="./img/product04.png" alt="">
-                        </div>
-                        <div class="product-body">
-                            <p class="product-category">Category</p>
-                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                            <h4 class="product-price">$980.00
-                                <del class="product-old-price">$990.00</del>
-                            </h4>
-                            <div class="product-rating">
-                            </div>
-                            <div class="product-btns">
-                                <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span class="tooltipp">add to wishlist</span>
-                                </button>
-                                <button class="add-to-compare"><i class="fa fa-exchange"></i><span class="tooltipp">add to compare</span>
-                                </button>
-                                <button class="quick-view"><i class="fa fa-eye"></i><span
-                                        class="tooltipp">quick view</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="add-to-cart">
-                            <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- /product -->
-
             </div>
             <!-- /row -->
         </div>
