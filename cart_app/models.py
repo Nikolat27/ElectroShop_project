@@ -15,6 +15,7 @@ class Cart(models.Model):
     color = models.CharField(max_length=40)
     quantity = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_products")
+    coupon_used = models.FloatField(default=False, null=True, blank=True)
 
     def __str__(self):
         return f"{self.product.title} - {self.user.username}"
@@ -79,13 +80,14 @@ class Cart(models.Model):
 
 class Coupon(models.Model):
     code = models.CharField(max_length=30, unique=True)
-    cart = models.OneToOneField(Cart, on_delete=models.CASCADE, null=True, blank=True, related_name="cart_coupon")
     discount_percentage = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     limit_price = models.IntegerField(default=10)
+    maximum_price = models.IntegerField(default=1000000)
     valid_from = models.DateTimeField(auto_now=False, verbose_name="Start at")
     valid_to = models.DateTimeField(auto_now=False, verbose_name="Expire at")
     active = models.BooleanField(help_text="If you wanna this coupon be available tick this field")
     expired = models.BooleanField(default=False, editable=False)
+    maximum_use = models.IntegerField(default=1)
 
     def __str__(self):
         return f"{self.code} - {self.discount_percentage}"
