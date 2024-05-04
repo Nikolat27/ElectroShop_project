@@ -4,8 +4,6 @@ from django.db.models import Avg, Count, Max, Min
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
-
-from cart_app.models import Province, City
 from product_app.models import Product, Comment, Category, Brand, Like
 
 

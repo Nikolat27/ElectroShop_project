@@ -1,6 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from account_app.models import User
 from product_app.models import Product
 from datetime import datetime
@@ -8,74 +8,6 @@ from django.utils import timezone
 
 
 # Create your models here.
-
-
-class Cart(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_cart")
-    color = models.CharField(max_length=40)
-    quantity = models.IntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_products")
-    coupon_used = models.FloatField(default=False, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.product.title} - {self.user.username}"
-
-    @classmethod
-    def add(self, user, product_id, color, quantity):
-        product = get_object_or_404(Product, id=product_id)
-        have_cart = False
-        try:
-            user_cart = Cart.objects.get(user=user, product=product, color=color)
-            if user_cart:
-                have_cart = True
-        except:
-            have_cart = False
-
-        if have_cart is True:
-            new_quantity = int(quantity)
-            user_cart.quantity += new_quantity
-            user_cart.save()  # Allways remember to save your changes!
-        else:
-            Cart.objects.create(user=user, product=product, color=color, quantity=quantity)
-
-    @classmethod
-    def remove_from_cart(self, cart_id, user):
-        cart = Cart.objects.get(user=user, id=cart_id)
-        if cart:
-            cart.delete()
-        else:
-            print("no cart")
-
-    def len(self, request):
-        user = request.user
-        cart_total = Cart.objects.filter(user=user).count()
-        return cart_total
-
-    def total_len(self, request):
-        user = request.user
-        cart_total = Cart.objects.filter(user=user)
-        total_quantity = 0
-        for item in cart_total:
-            total_quantity += item.quantity
-        return total_quantity
-
-    def total_item_price(self):
-        if self.product and self.quantity:
-            total = self.product.discount_price() * self.quantity
-            return float(total)
-
-    def total_cart_price(self, request):
-        user = request.user
-        cart = Cart.objects.filter(user=user)
-        subtotal = 0
-        for item in cart:
-            subtotal += item.total_item_price()
-        return subtotal
-
-    def remove_cart(self, request):
-        user = request.user
-        cart = Cart.objects.filter(user=user)
-        cart.delete()
 
 
 class Coupon(models.Model):
@@ -88,6 +20,7 @@ class Coupon(models.Model):
     active = models.BooleanField(help_text="If you wanna this coupon be available tick this field")
     expired = models.BooleanField(default=False, editable=False)
     maximum_use = models.IntegerField(default=1)
+    number_of_times_used = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.code} - {self.discount_percentage}"
@@ -102,6 +35,44 @@ class Coupon(models.Model):
             else:
                 self.expired = False
                 self.save()
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_cart", primary_key=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Cart"
+
+    def total_cart_price(self):
+        subtotal = 0
+        for item in self.cart_items.all():
+            subtotal += item.total_item_price()
+        return subtotal
+
+    def len(self):
+        total = 0
+        for item in self.cart_items.all():
+            total += 1
+        return total
+
+    def total_quantity(self):
+        total = 0
+        for item in self.cart_items.all():
+            total += item.quantity
+        return total
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="cart_items")
+    color = models.CharField(max_length=30)
+    quantity = models.IntegerField(default=1)
+    price = models.BigIntegerField()
+
+    def total_item_price(self):
+        if self.price and self.quantity:
+            total_price = self.price * self.quantity
+            return total_price
 
 
 order_choices = (("unpaid", "unpaid"), ("paid", "paid"), ("refund", "refund"))
@@ -123,21 +94,13 @@ class Order(models.Model):
     order_code = models.CharField(max_length=20, unique=True)
     optional_notes = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    coupon_used = models.BooleanField(default=False)
-    coupon = models.OneToOneField(Coupon, on_delete=models.CASCADE, null=True, blank=True)
 
     def calculate_subtotal(self):
         order_items = self.order_items.all()
         total = 0
         for item in order_items:
             total += item.price
-
-        if self.coupon_used is True:
-            discount_amount = (self.coupon.discount_percentage / 100) * total
-            total -= discount_amount
-            self.subtotal = total
-        else:
-            self.subtotal = total
+        self.subtotal = total
         self.save()
 
     def __str__(self):

@@ -5,14 +5,13 @@
 </a>
 <div class="cart-dropdown">
     <div class="cart-list">
-        {% for item in cart %}
+        {% for item in cart.cart_items.all %}
             <div class="product-widget">
                 <div class="product-img">
                     <img src="{{ item.product.main_image.url }}" alt="" width="35px" height="50px">
                 </div>
                 <div class="product-body">
-                    <h3 class="product-name"><a href="
-                                                        {% url "product_app:product_detail" item.product.id %}">
+                    <h3 class="product-name"><a href="{% url "product_app:product_detail" item.product.id %}">
                         {{ item.product.title }}</a>
                     </h3>
                     <h4 class="product-price"><span
@@ -33,6 +32,6 @@
     </div>
     <div class="cart-btns">
         <a href="{% url "cart_app:cart_page" %}">View Cart</a>
-        <a href="#">Checkout <i class="fa fa-arrow-circle-right"></i></a>
+        <a href="{% url "cart_app:checkout_page" %}">Checkout <i class="fa fa-arrow-circle-right"></i></a>
     </div>
 </div>

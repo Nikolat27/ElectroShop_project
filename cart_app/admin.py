@@ -3,6 +3,15 @@ from . import models
 
 
 # Register your models here.
+class CartItemInline(admin.TabularInline):
+    model = models.CartItem
+
+
+@admin.register(models.Cart)
+class CartAdmin(admin.ModelAdmin):
+    model = models.Cart
+    inlines = (CartItemInline,)
+
 
 class OrderItemInline(admin.TabularInline):
     model = models.OrderItem
@@ -14,8 +23,15 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = (OrderItemInline,)
 
 
-admin.site.register(models.Cart)
+class CityInline(admin.TabularInline):
+    model = models.City
+
+
+@admin.register(models.Province)
+class ProvinceAdmin(admin.ModelAdmin):
+    model = models.Province
+    inlines = (CityInline,)
+
+
 admin.site.register(models.Coupon)
 admin.site.register(models.Refund)
-admin.site.register(models.Province)
-admin.site.register(models.City)

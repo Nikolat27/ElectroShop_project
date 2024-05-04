@@ -1,8 +1,8 @@
-function apply_coupon() {
+function apply_coupon(id) {
     let coupon_code = document.getElementById("coupon_code").value
     let subtotal_field = document.getElementById("subtotal-price")
     $.ajax({
-        url: `/cart/apply_coupon`,
+        url: `/cart/apply_coupon/${id}`,
         data: {
             coupon_code: coupon_code
         },

@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from MyEcommerce_project import settings
 from account_app.models import User
-from cart_app.models import Cart, Coupon, Order, OrderItem, City, Province
+from cart_app.models import Cart, Coupon, Order, OrderItem, City, Province, CartItem
 from product_app.models import Product
 from . import iran_province_city
 
@@ -33,23 +33,19 @@ CallbackURL = "http://127.0.0.1:8000/cart/verify_payment"
 
 
 def ajax_template_generator(request, user):
-    cart = Cart.objects.filter(user=user)
-    cart_length = 0
-    cart_total_price = 0
-    total_len = 0
+    cart = Cart.objects.filter(user=user).first()
 
-    for item in cart:
-        cart_length = item.len(request)
-        cart_total_price = item.total_cart_price(request)
-        total_len = item.total_len(request)
+    cart_length = cart.len()
+    cart_total_price = cart.total_cart_price()
+    total_quantity = cart.total_quantity()
     data = render_to_string("ajax_templates/cart_template_ajax.html",
                             context={"cart": cart, "cart_length": cart_length, "cart_total_price": cart_total_price,
-                                     "total_len": total_len})
+                                     "total_len": total_quantity})
     return data
 
 
 def cart_page(request):
-    cart = Cart.objects.filter(user=request.user)
+    cart = Cart.objects.filter(user=request.user).first()
 
     return render(request, "cart_app/cart_page.html", context={"cart": cart})
 
@@ -60,12 +56,32 @@ def add_cart(request, pk):
             user = request.user
             product_id = pk
             color = request.POST.get("color")
-            quantity = request.POST.get("quantity")
+            quantity = int(request.POST.get("quantity"))
 
             if user and product_id and color and quantity:
-                Cart.add(user=user, product_id=product_id, color=color, quantity=quantity)
-                data = ajax_template_generator(request=request, user=user)
-                return JsonResponse({"data": data, "bool": True})
+                cart = Cart.objects.filter(user=user)
+                product = Product.objects.get(id=product_id)
+
+                if cart.exists():
+                    # Check if the product already exists in the cart
+                    item_exists = CartItem.objects.filter(cart=cart.first(), product=product, color=color)
+                    if item_exists.exists():
+                        item = item_exists.first()
+                        item.quantity += quantity
+                        item.save()
+                        data = ajax_template_generator(request=request, user=user)
+                        return JsonResponse({"data": data, "bool": True})
+                    else:
+                        CartItem.objects.create(cart=cart.first(), product=product, quantity=quantity, color=color,
+                                                price=product.discount_price())
+                        data = ajax_template_generator(request=request, user=user)
+                        return JsonResponse({"data": data, "bool": True})
+                else:
+                    cart = Cart.objects.create(user=user)
+                    CartItem.objects.create(cart=cart, product=product, quantity=quantity, color=color,
+                                            price=product.discount_price())
+                    data = ajax_template_generator(request=request, user=user)
+                    return JsonResponse({"data": data, "bool": True})
     else:
         print("hi")
 
@@ -73,19 +89,23 @@ def add_cart(request, pk):
 def cart_update(request, pk):
     if request.user.is_authenticated is True:
         new_quantity = int(request.GET.get("new_quantity"))
-        cart = Cart.objects.get(id=pk)
-        cart.quantity = new_quantity
-        cart.save()
-        new_price = cart.total_item_price()
-        subtotal = cart.total_cart_price(request)
-        return JsonResponse({"bool": True, "new_price": new_price, "subtotal": subtotal})
+        if new_quantity and new_quantity >= 1:
+            cart_item = CartItem.objects.get(id=pk)
+            cart_item.quantity = new_quantity
+            cart_item.save()
+            new_price = cart_item.total_item_price()
+            subtotal = cart_item.cart.total_cart_price()
+            return JsonResponse({"bool": True, "new_price": new_price, "subtotal": subtotal})
+        else:
+            return JsonResponse({"bool": False})
 
 
 def remove_from_cart(request, pk):
     user = request.user
-    cart_id = pk
+    cart_item_id = pk
     if pk and user:
-        Cart.remove_from_cart(user=user, cart_id=cart_id)
+        item = CartItem.objects.get(id=cart_item_id)
+        item.delete()
         data = ajax_template_generator(request=request, user=user)
         return JsonResponse({"data": data, "bool": True})
     else:
@@ -98,14 +118,36 @@ def add_cart_store(request, pk):
     product = Product.objects.get(id=product_id)
     color = product.colors.first()
     if user and product:
-        Cart.add(user=user, product_id=product_id, color=color, quantity=1)
-        data = ajax_template_generator(request=request, user=user)
-        return JsonResponse({"bool": True, "data": data})
+        cart = Cart.objects.filter(user=user)
+        # Check if the user has cart or no
+        if cart.exists():
+            # Check if the product already exists in the cart
+            item_exists = CartItem.objects.filter(cart=cart.first(), product=product, color=color,
+                                                  price=product.discount_price())
+
+            if item_exists.exists():
+                item = item_exists.first()
+                item.quantity += 1
+                item.save()
+                data = ajax_template_generator(request=request, user=user)
+                return JsonResponse({"data": data, "bool": True})
+            else:
+                CartItem.objects.create(cart=cart.first(), product=product, quantity=1, color=color,
+                                        price=product.discount_price())
+                data = ajax_template_generator(request=request, user=user)
+                return JsonResponse({"data": data, "bool": True})
+        else:
+            cart = Cart.objects.create(user=user)
+            CartItem.objects.create(cart=cart, product=product, quantity=1, color=color,
+                                    price=product.discount_price())
+            data = ajax_template_generator(request=request, user=user)
+            return JsonResponse({"data": data, "bool": True})
 
 
 @login_required
 def checkout_page(request):
-    cart = Cart.objects.filter(user=request.user)
+    user = request.user
+    cart = Cart.objects.filter(user=user)
     provinces = Province.objects.all()
     return render(request, "cart_app/checkout.html", context={"cart": cart,
                                                               "provinces": provinces})
@@ -182,21 +224,26 @@ def apply_coupon(request, pk):
     if coupon_code:
         coupon = Coupon.objects.get(code=coupon_code)
         if coupon:
-            if coupon.expired is False and coupon.active is True:
-                if order.subtotal >= coupon.limit_price:
-                    order.coupon_used = True
-                    order.coupon = coupon
-                    order.calculate_subtotal()
-                    order.save()
-                    return HttpResponse(f"{order.subtotal}")
+            if not coupon.expired and coupon.active:
+                if coupon.limit_price <= order.subtotal <= coupon.maximum_price:
+                    if coupon.maximum_use >= coupon.number_of_times_used:
+                        order.coupon_used = True
+                        coupon.number_of_times_used += 1
+                        order.total_cart_price()
+                        order.save()
+                        coupon.save()
+                        return HttpResponse(f"{order.subtotal}")
+                    else:
+                        print(f"You have reached to your maximum uses of this coupon ({coupon.maximum_use})")
                 else:
-                    print("Your Cart subtotal is greater than coupon`s limit price")
+                    print("Your Cart subtotal is lower than coupon`s limit price "
+                          "or its greater than maximum")
             else:
-                print("coupon is Expired or unactivated")
+                print("Coupon is Expired or unactivated")
         else:
-            print("coupon didnt find")
+            print("Coupon didnt find")
     else:
-        print("no coupon")
+        print("No coupon")
 
 
 def request_payment(request, pk):

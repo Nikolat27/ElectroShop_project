@@ -5,14 +5,18 @@
 </a>
 <div class="cart-dropdown">
     <div class="cart-list">
-        {% for item in cart %}
+        {% for item in cart.cart_items.all %}
             <div class="product-widget">
                 <div class="product-img">
-                    <img src="{{ item.product.main_image.url }}" alt="" width="35px" height="50px">
+                    {% if item.product.main_image %}
+                        <img src="{{ item.product.main_image.url }}" alt="" width="35px" height="50px">
+                    {% else %}
+                        <img src="" alt="No Image Available!" width="35px" height="50px">
+                    {% endif %}
                 </div>
                 <div class="product-body">
                     <h3 class="product-name"><a href="
-                                                        {% url "product_app:product_detail" item.product.id %}">
+                               {% url "product_app:product_detail" item.product.id %}">
                         {{ item.product.title }}</a>
                     </h3>
                     <h4 class="product-price"><span

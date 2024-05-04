@@ -16,7 +16,7 @@ function update_cart(id) {
                 new_price.innerText = `$${response.new_price}`
                 subtotal.innerText = `$${response.subtotal}`
             } else {
-                console.log("Error!")
+                console.log("Error! Your quantity have to be more than 1")
             }
         }
     });
