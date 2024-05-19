@@ -4,7 +4,7 @@ from django.db.models import Avg, Count, Max, Min
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
-from product_app.models import Product, Comment, Category, Brand, Like
+from product_app.models import Product, Comment, Category, Brand, Like, ProductColor
 
 
 # Create your views here.
@@ -15,6 +15,14 @@ def product_detail(request, pk):
     related_products = Product.objects.filter(category__in=product.category.all()).order_by("-id").distinct()
     return render(request, "product_app/product_detail.html",
                   context={"product": product, "related_products": related_products})
+
+
+def filter_color_quantities(request, pk):
+    color = request.GET.get("color")
+    product = ProductColor.objects.get(product_id=pk, color__title__icontains=color)
+    quantity = product.quantity
+
+    return JsonResponse({"bool": True, "data": quantity})
 
 
 def get_ip(request):
@@ -48,7 +56,6 @@ def store_page(request):
     total = Product.objects.count()
     page_number = request.GET.get("page", 1)
     q = request.GET.get("q")
-
     # To Get the GET method parameters
     query_params = request.GET.copy()
 
@@ -72,7 +79,7 @@ def store_page(request):
 
 
 def filter_data(request):
-    # Getting Get parameters
+    # Getting Get method parameters
     categories = request.GET.getlist('category[]')
     brands = request.GET.getlist('brand[]')
     price_min = request.GET.get("minPrice")
@@ -81,9 +88,11 @@ def filter_data(request):
     show = request.GET.get('show', 1)
     q = request.GET.get("q")
     page_number = request.GET.get("page", 1)
+
+    # Getting Products
     products = Product.objects.all().distinct()
 
-    # To Get the GET method parameters
+    # To Have a copy of GET method parameters
     query_params = request.GET.copy()
 
     # To Avoid many 'page' parameters
@@ -106,7 +115,8 @@ def filter_data(request):
 
     # Start Sorting
     if sort == "available":
-        products = products.filter(in_stock=True).order_by("-id").distinct()
+        # products = products.filter(in_stock=True).order_by("-id").distinct()
+        products = products.filter(product_colors__in_stock=True).order_by("-id").distinct()
     elif sort == "new":
         products = products.order_by("-created_at").distinct()
     elif sort == "popular":

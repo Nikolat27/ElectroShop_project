@@ -75,7 +75,8 @@
                 <div class="d-sm-flex justify-content-between my-4 pb-4 border-bottom">
                     <div class="media d-block d-sm-flex text-center text-sm-left">
                         <a class="cart-item-thumb mx-auto mr-sm-4"
-                           href="{% url "cart_app:order_detail" order.id %}">Order Number {{ forloop.counter }}</a>
+                           href="{% url "cart_app:order_detail" order.id %}"><span
+                                style="font-size: xx-large; font-weight: bold;">Order Number {{ forloop.counter }}</span></a>
                         <div class="media-body pt-3">
                             <h3 class="product-card-title font-weight-semibold border-0 pb-0"><a
                                     href="{% url "cart_app:order_detail" order.id %}">Name: {{ order.first_name }}
@@ -86,8 +87,12 @@
                             <div class="font-size-lg pt-2"><span
                                     style="color: red; font-weight: bold;">Order Code</span>: {{ order.order_code }}
                             </div>
-                            <div id="" class="font-size-lg text-primary pt-2">
+                            <div class="font-size-lg text-primary pt-2">
                                 <span style="color: red; font-weight: bold">Subtotal:</span> ${{ order.subtotal }}</div>
+                            <div class="font-size-lg pt-2"><span style="color: darkorange; font-weight: bold;">
+                                The order will be deleted in {{ order.time_difference }} Minutes,</span>
+                                <span style="color: limegreen; font-weight: bold;">unless you pay </span>
+                            </div>
                         </div>
                     </div>
                     <div class="pt-2 pt-sm-0 pl-sm-3 mx-auto mx-sm-0 text-center text-sm-left"

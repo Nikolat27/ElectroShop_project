@@ -123,20 +123,20 @@
                                                           style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
                                                 </div>
                                             </div>
-                                            <div class="add-to-cart">
-                                                {% if request.user.is_authenticated is True %}
-                                                    <button onclick="add_to_cart({{ product.id }})"
-                                                            class="add-to-cart-btn"><i
-                                                            class="fa fa-shopping-cart"></i> add to
-                                                        cart
-                                                    </button>
-                                                {% else %}
-                                                    <button type="button" class="add-to-cart-btn"><a
-                                                            style="color: white;"
-                                                            href="{% url "account_app:login" %}">Pls Login</a>
-                                                    </button>
-                                                {% endif %}
-                                            </div>
+{#                                            <div class="add-to-cart">#}
+{#                                                {% if request.user.is_authenticated is True %}#}
+{#                                                    <button onclick="add_to_cart({{ product.id }})"#}
+{#                                                            class="add-to-cart-btn"><i#}
+{#                                                            class="fa fa-shopping-cart"></i> add to#}
+{#                                                        cart#}
+{#                                                    </button>#}
+{#                                                {% else %}#}
+{#                                                    <button type="button" class="add-to-cart-btn"><a#}
+{#                                                            style="color: white;"#}
+{#                                                            href="{% url "account_app:login" %}">Pls Login</a>#}
+{#                                                    </button>#}
+{#                                                {% endif %}#}
+{#                                            </div>#}
                                         </div>
                                     {% endfor %}
                                     <!-- /product -->

@@ -35,3 +35,4 @@ class ProvinceAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Coupon)
 admin.site.register(models.Refund)
+admin.site.register(models.Reserve)

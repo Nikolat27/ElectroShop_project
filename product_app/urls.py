@@ -10,4 +10,5 @@ urlpatterns = [
     path('add_like/<int:pk>', views.add_like, name="add_like"),
     path('wishlists', views.wishlist_page, name="wishlist_page"),
     path("autocomplete", views.autocomplete, name="autocomplete"),
+    path("filter_colors/<int:pk>/", views.filter_color_quantities, name="filter_colors"),
 ]

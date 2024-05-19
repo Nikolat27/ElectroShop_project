@@ -1,10 +1,12 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Avg
 from django.urls import reverse
 from django.utils.text import slugify
-
+from django.contrib import messages
 from account_app.models import User
 from django.db import models
 from django.utils.html import format_html
+from django.utils.translation import gettext as _
 
 
 # Create your models here.
@@ -19,6 +21,16 @@ class Ip(models.Model):
 class Category(models.Model):
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="subs")
     title = models.CharField(max_length=50, unique=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.parent is None:
+            if Category.objects.filter(parent__title=self.title).count() >= 2:
+                self.date_error_message(self, field_name="title", unique_for="title")
+        else:
+            if Category.objects.filter(parent__title=self.title).count() >= 2:
+                return
 
     def __str__(self):
         return self.title
@@ -50,11 +62,8 @@ class Product(models.Model):
     main_image = models.ImageField(upload_to="product-images/")
     description = models.TextField()
     price = models.IntegerField()
-    quantity = models.IntegerField()
     discount_percentage = models.FloatField(null=True, blank=True, default=0,
                                             help_text="If you dont wanna give a discount, put this field free.")
-    colors = models.ManyToManyField(Color)
-    in_stock = models.BooleanField(default=False)
     buyers = models.ManyToManyField(User, related_name="buyers", editable=False)
     discount = models.BooleanField(default=False, editable=False)
     slug = models.SlugField(unique=True, null=True, blank=True, allow_unicode=True)
@@ -64,7 +73,7 @@ class Product(models.Model):
         super().__init__(*args, **kwargs)
         if self.discount_percentage and self.discount_percentage > 0:
             self.discount = True
-        else:
+        elif not self.discount_percentage or self.discount_percentage <= 0:
             self.discount = False
 
     def get_absolute_url(self):
@@ -100,6 +109,46 @@ class Product(models.Model):
         if review['reviews'] is not None:
             avg = float(review['reviews'])
         return avg
+
+    @property
+    def is_available(self):
+        for product_color in self.product_colors.all():
+            if not product_color.in_stock or product_color.quantity <= 0:
+                return False
+        return True
+
+
+class ProductColor(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_colors")
+    color = models.ForeignKey(Color, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
+    in_stock = models.BooleanField(default=True)
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     if not self.color:
+    #         return
+    #     else:
+    #         if self.quantity and self.quantity == 0:
+    #             self.in_stock = False
+    #             self.save()
+    #         elif self.quantity and self.quantity >= 1:
+    #             self.in_stock = True
+    #             self.save()
+
+    def save(self, *args, **kwargs):
+        if not self.color:
+            return  # Do not save if color is null
+
+        if self.quantity == 0:
+            self.in_stock = False
+        elif self.quantity >= 1:
+            self.in_stock = True
+
+        super(ProductColor, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.product.title} - {self.color.title} - {self.quantity}"
 
 
 class Specification(models.Model):

@@ -129,7 +129,7 @@
 
             <div id="subtotal-price" class="h3 font-weight-semibold text-center py-3">${{ order.subtotal }}</div>
             <hr>
-            <a class="btn btn-primary btn-block" href="{% url "cart_app:request_payment" order.id %}">
+            <a class="btn btn-primary btn-block" href="{% url "cart_app:check_reservation" order.id %}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                      class="feather feather-credit-card mr-2">
@@ -137,40 +137,40 @@
                     <line x1="1" y1="10" x2="23" y2="10"></line>
                 </svg>
                 Proceed to Checkout</a>
-{#            <div class="pt-4">#}
-{#                <div class="accordion" id="cart-accordion">#}
-{#                    <div class="card">#}
-{#                        <div class="card-header">#}
-{#                            <h3 class="accordion-heading font-weight-semibold"><a href="#promocode" role="button"#}
-{#                                                                                  data-toggle="collapse"#}
-{#                                                                                  aria-expanded="true"#}
-{#                                                                                  aria-controls="promocode">Apply Coupon#}
-{#                                code<span class="accordion-indicator"><svg xmlns="http://www.w3.org/2000/svg" width="24"#}
-{#                                                                           height="24" viewBox="0 0 24 24" fill="none"#}
-{#                                                                           stroke="currentColor" stroke-width="2"#}
-{#                                                                           stroke-linecap="round"#}
-{#                                                                           stroke-linejoin="round"#}
-{#                                                                           class="feather feather-chevron-up"><polyline#}
-{#                                        points="18 15 12 9 6 15"></polyline></svg></span></a></h3>#}
-{#                        </div>#}
-{#                        <p style="color: red; font-size: x-large">coupon used: {{ order.coupon_used }}</p>#}
-{#                        <div class="collapse show" id="promocode" data-parent="#cart-accordion">#}
-{#                            <form action="{% url "cart_app:apply_coupon" order.id %}" method="GET">#}
-{#                                <div class="card-body">#}
-{#                                    <div class="form-group">#}
-{#                                        <input class="form-control" name="coupon_code" type="text" id="coupon_code"#}
-{#                                               placeholder="Coupon code" required>#}
-{#                                        <div class="invalid-feedback">Please provide a valid discount coupon!</div>#}
-{#                                    </div>#}
-{#                                    <button class="btn btn-outline-primary btn-block"#}
-{#                                            type="submit">Apply Coupon#}
-{#                                    </button>#}
-{#                                </div>#}
-{#                            </form>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
+            <div class="pt-4">
+                <div class="accordion" id="cart-accordion">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="accordion-heading font-weight-semibold"><a href="#promocode" role="button"
+                                                                                  data-toggle="collapse"
+                                                                                  aria-expanded="true"
+                                                                                  aria-controls="promocode">Apply Coupon
+                                code<span class="accordion-indicator"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                                                           height="24" viewBox="0 0 24 24" fill="none"
+                                                                           stroke="currentColor" stroke-width="2"
+                                                                           stroke-linecap="round"
+                                                                           stroke-linejoin="round"
+                                                                           class="feather feather-chevron-up"><polyline
+                                        points="18 15 12 9 6 15"></polyline></svg></span></a></h3>
+                        </div>
+                        <p style="color: red; font-size: x-large">coupon used: {{ order.coupon_used }}</p>
+                        <div class="collapse show" id="promocode" data-parent="#cart-accordion">
+                            <form action="{% url "cart_app:apply_coupon" order.id %}" method="GET">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <input class="form-control" name="coupon_code" type="text" id="coupon_code"
+                                               placeholder="Coupon code" required>
+                                        <div class="invalid-feedback">Please provide a valid discount coupon!</div>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-block"
+                                            type="submit">Apply Coupon
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

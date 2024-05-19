@@ -151,12 +151,14 @@
                                 <div><strong>TOTAL</strong></div>
                             </div>
                             <div class="order-products">
-                                {% for item in cart %}
+                                {% for item in cart.cart_items.all %}
                                     <div class="order-col">
-                                        <div>{{ item.quantity }}x {{ item.product.title }}
+                                        <div>{{ item.quantity }}x {{ item.product.title }} - Color = {{ item.color.title }}
                                         </div>
                                         <div>${{ item.total_item_price }}</div>
                                     </div>
+                                {% empty %}
+                                    No Item in your Basket!
                                 {% endfor %}
                             </div>
                             <div class="order-col">

@@ -8,8 +8,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from MyEcommerce_project import settings
 from account_app.models import User
-from cart_app.models import Cart, Coupon, Order, OrderItem, City, Province, CartItem
-from product_app.models import Product
+from cart_app.models import Cart, Coupon, Order, OrderItem, City, Province, CartItem, Reserve
+from product_app.models import Product, ProductColor
 from . import iran_province_city
 
 # Create your views here.
@@ -112,42 +112,47 @@ def remove_from_cart(request, pk):
         return HttpResponse("error (pk and user)")
 
 
-def add_cart_store(request, pk):
-    user = request.user
-    product_id = pk
-    product = Product.objects.get(id=product_id)
-    color = product.colors.first()
-    if user and product:
-        cart = Cart.objects.filter(user=user)
-        # Check if the user has cart or no
-        if cart.exists():
-            # Check if the product already exists in the cart
-            item_exists = CartItem.objects.filter(cart=cart.first(), product=product, color=color,
-                                                  price=product.discount_price())
-
-            if item_exists.exists():
-                item = item_exists.first()
-                item.quantity += 1
-                item.save()
-                data = ajax_template_generator(request=request, user=user)
-                return JsonResponse({"data": data, "bool": True})
-            else:
-                CartItem.objects.create(cart=cart.first(), product=product, quantity=1, color=color,
-                                        price=product.discount_price())
-                data = ajax_template_generator(request=request, user=user)
-                return JsonResponse({"data": data, "bool": True})
-        else:
-            cart = Cart.objects.create(user=user)
-            CartItem.objects.create(cart=cart, product=product, quantity=1, color=color,
-                                    price=product.discount_price())
-            data = ajax_template_generator(request=request, user=user)
-            return JsonResponse({"data": data, "bool": True})
+# def add_cart_store(request, pk):
+#     user = request.user
+#     product_id = pk
+#     product = Product.objects.get(id=product_id)
+#     color = product.product_colors.first().color
+#     max_quantity = product.product_colors.first().quantity
+#
+#     if user and product:
+#         cart = Cart.objects.filter(user=user)
+#         # Check if the user has cart or no
+#         if cart.exists():
+#             # Check if the product already exists in the cart
+#             item_exists = CartItem.objects.filter(cart=cart.first(), product=product, color=color,
+#                                                   price=product.discount_price())
+#
+#             if item_exists.exists():
+#                 item = item_exists.first()
+#                 if not item.quantity > max_quantity:
+#                     item.quantity += 1
+#                     item.save()
+#                     data = ajax_template_generator(request=request, user=user)
+#                     return JsonResponse({"data": data, "bool": True})
+#                 else:
+#                     return JsonResponse({"error": "Cannot add more than maximum quantity", "bool": False})
+#             else:
+#                 CartItem.objects.create(cart=cart.first(), product=product, quantity=1, color=color,
+#                                         price=product.discount_price())
+#                 data = ajax_template_generator(request=request, user=user)
+#                 return JsonResponse({"data": data, "bool": True})
+#         else:
+#             cart = Cart.objects.create(user=user)
+#             CartItem.objects.create(cart=cart, product=product, quantity=1, color=color,
+#                                     price=product.discount_price())
+#             data = ajax_template_generator(request=request, user=user)
+#             return JsonResponse({"data": data, "bool": True})
 
 
 @login_required
 def checkout_page(request):
     user = request.user
-    cart = Cart.objects.filter(user=user)
+    cart = Cart.objects.filter(user=user).first()
     provinces = Province.objects.all()
     return render(request, "cart_app/checkout.html", context={"cart": cart,
                                                               "provinces": provinces})
@@ -166,7 +171,7 @@ def make_order(request):
         lname = request.POST.get("lname")
         email = request.POST.get("email")
         city = request.POST.get("city")
-        country = request.POST.get("country")
+        province = request.POST.get("province")
         address = request.POST.get("address")
         postal_code = request.POST.get("postal_code")
         phone_number = request.POST.get("phone_number")
@@ -174,11 +179,11 @@ def make_order(request):
         subtotal = request.POST.get("subtotal")
         order_code = randint(1000000000, 9999999999)
         order = Order.objects.create(user=user, first_name=fname, last_name=lname, email=email, city=city,
-                                     country=country,
+                                     province=province,
                                      address=address, postal_code=postal_code, phone_number=phone_number,
                                      optional_notes=optional_notes, subtotal=subtotal, order_code=order_code)
 
-        user_cart = Cart.objects.filter(user=user)
+        user_cart = CartItem.objects.filter(cart__user=user)
         for item in user_cart:
             OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity, color=item.color,
                                      price=item.total_item_price())
@@ -210,9 +215,14 @@ def order_delete(request, pk):
 
 def order_item_delete(request, pk):
     order_item = OrderItem.objects.get(id=pk)
+    order = order_item.order
     next_page = request.GET.get("page_pk")
     order_item.delete()
-    if next_page:
+
+    if not order.order_items.count() > 0:
+        order.delete()
+        return redirect("home_app:main")
+    elif next_page:
         return redirect("cart_app:order_detail", next_page)
     else:
         return redirect("home_app:main")
@@ -227,12 +237,19 @@ def apply_coupon(request, pk):
             if not coupon.expired and coupon.active:
                 if coupon.limit_price <= order.subtotal <= coupon.maximum_price:
                     if coupon.maximum_use >= coupon.number_of_times_used:
-                        order.coupon_used = True
-                        coupon.number_of_times_used += 1
-                        order.total_cart_price()
-                        order.save()
-                        coupon.save()
-                        return HttpResponse(f"{order.subtotal}")
+                        if not order.coupon:
+                            order.coupon_used = True
+                            order.coupon = coupon
+                            coupon.number_of_times_used += 1
+                            order.calculate_subtotal()
+                            order.save()
+                            coupon.save()
+                            return HttpResponse(
+                                f"Your order`s subtotal considering %{coupon.discount_percentage} discount coupon: "
+                                f"{order.subtotal}")
+                        else:
+                            return HttpResponse(f"You already have used your discount coupon!")
+
                     else:
                         print(f"You have reached to your maximum uses of this coupon ({coupon.maximum_use})")
                 else:
@@ -244,6 +261,38 @@ def apply_coupon(request, pk):
             print("Coupon didnt find")
     else:
         print("No coupon")
+
+
+def check_reservation(request, pk):
+    order = Order.objects.get(id=pk)
+
+    for item in order.order_items.all():
+        reserves = Reserve.objects.filter(product=item.product, color__icontains=item.color, is_expired=False)
+        color = item.color
+        product = ProductColor.objects.get(product=item.product, color__title__icontains=color)
+        order_quantity = item.quantity
+
+        if reserves.exists():
+            total_reserved = reserves.first().quantity
+            total_quantity = int(product.quantity) - int(total_reserved)
+
+            if order_quantity <= total_quantity:
+                print("Your considered quantity is less or equal than our availability."
+                      "So You will be redirect to payment page soon...")
+                Reserve.objects.create(product=item.product, color=color, quantity=order_quantity,
+                                       user=request.user)
+            else:
+                print("Your considered quantity is Greater than our availability. "
+                      "Pls reduce your quantity or wait to our product become available")
+                return redirect("home_app:main")
+        else:
+            if order_quantity <= product.quantity:
+                Reserve.objects.create(product=item.product, color=item.color, quantity=item.quantity,
+                                       user=request.user)
+                print("your products reserved successfully You will be redirected to payment page soon..")
+            else:
+                print("Your considered quantity is greater than our availability")
+    return redirect(request_payment(request, order.id))
 
 
 def request_payment(request, pk):
@@ -285,7 +334,7 @@ def request_payment(request, pk):
         return {'status': False, 'code': 'connection error'}
 
 
-def verify_payment(request, pk):
+def verify_payment(request):
     authority = request.GET['Authority']
     order = Order.objects.get(is_paid=False, user=request.user)
     subtotal = order.subtotal()
@@ -307,6 +356,10 @@ def verify_payment(request, pk):
             order.is_paid = True
             user.order_count += 1
             user.total_buy += subtotal
+            # Here if the payment was successful and
+            # everything was ok we delete the product instance which was RESERVED
+            reserved_product = Reserve.objects.get(reserved_id=123123)
+            reserved_product.delete()
 
             user.save()
             order.save()

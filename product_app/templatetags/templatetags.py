@@ -1,7 +1,7 @@
 from django import template
 from django.db.models import Count
 
-from product_app.models import Product, Like
+from product_app.models import Product, Like, ProductColor
 
 register = template.Library()
 
@@ -63,3 +63,12 @@ def x(value):
 @register.filter
 def range_loop(start, end):
     return range(start, end)
+
+
+@register.filter
+def get_quantity(pk, color):
+    product = ProductColor.objects.get(product__id=pk, color__title__icontains=color)
+    print(pk, color)
+    quantity = product.quantity
+
+    return quantity

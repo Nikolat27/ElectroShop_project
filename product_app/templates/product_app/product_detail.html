@@ -64,32 +64,46 @@
                             {% endif %}
                         </div>
                         <p>{{ product.description }}</p>
-
                         <form action="{% url "cart_app:add-to-cart" product.id %}" method="POST" id="add-to-cart">
                             {% csrf_token %}
                             <div class="product-options">
-                                {#                            <label>#}
-                                {#                                Size#}
-                                {#                                <select class="input-select">#}
-                                {#                                    <option value="0">X</option>#}
-                                {#                                </select>#}
-                                {#                            </label>#}
                                 <label>
                                     Color
-                                    <select class="input-select" name="color">
-                                        {% for color in product.colors.all %}
+                                    <select class="input-select" id="color-select" name="color">
+                                        {% for item in product.product_colors.all %}
                                             <option class="form-control"
-                                                    value="{{ color.title }}">{{ color.title }}</option>
+                                                    value="{{ item.color.title }}">
+                                                {{ item.color.title }}
+                                                {#                                                <span class="color-swatch"#}
+                                                {#                                                      style="display: inline-block; height: 20px; width: 20px;#}
+                                                {#                                                      background-color: {{ item.color.title }}"></span>#}
+                                            </option>
+                                        {% empty %}
+                                            <option class="form-control"
+                                                    value="no color">no color
+                                            </option>
                                         {% endfor %}
                                     </select>
                                 </label>
+                                <br><br>
+                                <label>
+                                    Quantity Available
+                                    <input type="text" id="quantity-available-field" readonly
+                                           value="{{ product.product_colors.first.quantity }}" class="form-control"
+                                           style="width: 70px;">
+                                </label>
                             </div>
+
+                            <!--For giving the product to ajax js function -->
+                            <input type="hidden" value="{{ product.id }}" id="product_id_fieldd">
 
                             <div class="add-to-cart">
                                 <div class="qty-label">
                                     Qty
                                     <div class="input-number">
-                                        <input type="number" name="quantity" value="1">
+                                        <input type="number" name="quantity" value="1"
+                                               max='{{ product.product_colors.first.quantity }}'
+                                               id="quantity-buy-field">
                                         <span class="qty-up">+</span>
                                         <span class="qty-down">-</span>
                                     </div>
@@ -99,7 +113,6 @@
                                 </button>
                             </div>
                         </form>
-
                         <ul class="product-btns">
                             <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
                                     class="add-to-wishlist"><i
@@ -318,13 +331,13 @@
 
                                                 </div>
                                             </ul>
-                                            <ul class="reviews-pagination">
-                                                <li class="active">1</li>
-                                                <li><a href="#">2</a></li>
-                                                <li><a href="#">3</a></li>
-                                                <li><a href="#">4</a></li>
-                                                <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
-                                            </ul>
+                                            {#                                            <ul class="reviews-pagination">#}
+                                            {#                                                <li class="active">1</li>#}
+                                            {#                                                <li><a href="#">2</a></li>#}
+                                            {#                                                <li><a href="#">3</a></li>#}
+                                            {#                                                <li><a href="#">4</a></li>#}
+                                            {#                                                <li><a href="#"><i class="fa fa-angle-right"></i></a></li>#}
+                                            {#                                            </ul>#}
                                         </div>
                                     </div>
                                     <!-- /Reviews -->
@@ -450,5 +463,26 @@
             setTimeout(() => document.getElementById('parent_id').value = id, 0);
             console.log(id);
         }
+
+        const quantityField = document.getElementById('quantity-buy-field');
+        const maxQuantity = parseInt(quantityField.getAttribute('max'));
+
+        quantityField.addEventListener('input', function () {
+            if (parseInt(quantityField.value) > maxQuantity) {
+                quantityField.value = maxQuantity;
+            }
+        });
+
+        document.querySelector('.qty-up').addEventListener('click', function () {
+            if (parseInt(quantityField.value) >= maxQuantity) {
+                quantityField.value = parseInt(quantityField.value) - 1;
+            }
+        });
+
+        document.querySelector('.qty-down').addEventListener('click', function () {
+            if (parseInt(quantityField.value) === 1) {
+                quantityField.value = parseInt(quantityField.value);
+            }
+        });
     </script>
 {% endblock %}

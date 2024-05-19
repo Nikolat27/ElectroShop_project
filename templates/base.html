@@ -43,7 +43,7 @@
                 <!-- LOGO -->
                 <div class="col-md-3">
                     <div class="header-logo">
-                        <a href="#" class="logo">
+                        <a class="logo">
                             <img src="{% static "/img/logo.png" %}" alt="">
                         </a>
                     </div>
@@ -52,12 +52,13 @@
 
                 <!-- SEARCH BAR -->
                 <div class="col-md-6">
-                    <div class="header-search">
+                    <div class="header-search search-container" style="display: flex; align-items: center;">
                         <form action="{% url "product_app:store_page" %}" method="GET">
                             <input class="form-control" id="q" list="products" type="text" name="q"
+                                   style="width: 375px; display: inline-block"
                                    placeholder="Search here.."
                                    {% if "q" in request.GET %}value="{{ request.GET.q }}"{% endif %}>
-                            <button type="submit" class="search-btn">Search</button>
+                            <button type="submit" class="search-btn" style="display: inline-block;">Search</button>
                         </form>
 
                         <datalist id="products">
