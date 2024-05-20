@@ -1,5 +1,9 @@
+from datetime import datetime, timedelta
+
 from django.core.exceptions import ValidationError
 from django.db.models import Avg
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib import messages
@@ -69,21 +73,37 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, null=True, blank=True, allow_unicode=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if self.title:
+            self.slug = slugify(self.title, allow_unicode=True)
+
         if self.discount_percentage and self.discount_percentage > 0:
             self.discount = True
         elif not self.discount_percentage or self.discount_percentage <= 0:
             self.discount = False
+        else:
+            return
+        super(Product, self).save(*args, **kwargs)
+
+        if self.pk:
+            if hasattr(self, 'original_price'):
+                if self.price != self.original_price:
+                    ProductPrice.objects.create(product=self, price=self.price)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.price:
+            self.original_price = self.price
 
     def get_absolute_url(self):
         return reverse("product_app:product_detail", kwargs={"slug": self.slug})
 
-    def save(
-            self, force_insert=False, force_update=False, using=None, update_fields=None
-    ):
-        self.slug = slugify(self.title, allow_unicode=True)
-        super(Product, self).save()
+    def get_price_for_past_30_days(self):
+        product_prices = ProductPrice.objects.filter(product_id=self.pk).order_by("-created_at").all()[:2]
+        prices = []
+        for product_price in product_prices:
+            prices.append(product_price.price)
+        return prices
 
     def __str__(self):
         return self.title
@@ -118,23 +138,28 @@ class Product(models.Model):
         return True
 
 
+class ProductPrice(models.Model):
+    product = models.ForeignKey(Product, models.CASCADE, related_name="product_prices")
+    created_at = models.DateField(auto_now_add=True)
+    price = models.IntegerField()
+
+    def __str__(self):
+        return (f"Product = {self.product.title} - Date changed = "
+                f"{self.created_at} - new-Price {self.price}")
+
+
+@receiver(post_save, sender=Product)
+def create_product_price(sender, instance, created, **kwargs):
+    if created:
+        product_price = ProductPrice.objects.create(product=instance, price=instance.price)
+        product_price.save()
+
+
 class ProductColor(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_colors")
     color = models.ForeignKey(Color, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
     in_stock = models.BooleanField(default=True)
-
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     if not self.color:
-    #         return
-    #     else:
-    #         if self.quantity and self.quantity == 0:
-    #             self.in_stock = False
-    #             self.save()
-    #         elif self.quantity and self.quantity >= 1:
-    #             self.in_stock = True
-    #             self.save()
 
     def save(self, *args, **kwargs):
         if not self.color:

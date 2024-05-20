@@ -11,4 +11,5 @@ urlpatterns = [
     path('wishlists', views.wishlist_page, name="wishlist_page"),
     path("autocomplete", views.autocomplete, name="autocomplete"),
     path("filter_colors/<int:pk>/", views.filter_color_quantities, name="filter_colors"),
+    path("x", views.x),
 ]

@@ -171,6 +171,7 @@
                                                   style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
                                         </div>
                                     </div>
+                                    {{ product.get_price_for_past_30_days }}
 {#                                    <div class="add-to-cart">#}
 {#                                        {% if request.user.is_authenticated is True %}#}
 {#                                            {% if product.product_colors.all.first.in_stock is True %}#}

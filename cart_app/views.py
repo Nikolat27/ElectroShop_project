@@ -2,6 +2,7 @@ import json
 import requests
 from random import randint
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -266,33 +267,50 @@ def apply_coupon(request, pk):
 def check_reservation(request, pk):
     order = Order.objects.get(id=pk)
 
-    for item in order.order_items.all():
-        reserves = Reserve.objects.filter(product=item.product, color__icontains=item.color, is_expired=False)
-        color = item.color
-        product = ProductColor.objects.get(product=item.product, color__title__icontains=color)
-        order_quantity = item.quantity
-
-        if reserves.exists():
-            total_reserved = reserves.first().quantity
-            total_quantity = int(product.quantity) - int(total_reserved)
-
-            if order_quantity <= total_quantity:
-                print("Your considered quantity is less or equal than our availability."
-                      "So You will be redirect to payment page soon...")
-                Reserve.objects.create(product=item.product, color=color, quantity=order_quantity,
-                                       user=request.user)
+    with transaction.atomic():
+        for item in order.order_items.all():
+            if not check_and_reserve_product(request, item):
+                reserve = Reserve.objects.filter(user=request.user)
+                reserve.delete()
+                return HttpResponse(f"Your product {item.product.title} "
+                                    f"with color {item.color} is not available, Pls edit your basket")
             else:
-                print("Your considered quantity is Greater than our availability. "
-                      "Pls reduce your quantity or wait to our product become available")
-                return redirect("home_app:main")
-        else:
-            if order_quantity <= product.quantity:
-                Reserve.objects.create(product=item.product, color=item.color, quantity=item.quantity,
-                                       user=request.user)
-                print("your products reserved successfully You will be redirected to payment page soon..")
-            else:
-                print("Your considered quantity is greater than our availability")
+                Reserve.objects.update_or_create(product=item.product, color=item.color,
+                                                 defaults={'quantity': item.quantity}, user=request.user)
+
     return redirect(request_payment(request, order.id))
+
+
+def check_and_reserve_product(request, item):
+    # Get the Quantity of all the considered Product`s Reserves
+    reserves = (Reserve.objects.filter(product=item.product, color__icontains=item.color, is_expired=False)
+                .values_list("quantity", flat=True))
+    # We need this queryset for inquiring the total quantity of the considered product with color
+    product = ProductColor.objects.get(product=item.product, color__title__icontains=item.color)
+
+    # Quantity amount that user wants to buy
+    order_quantity = item.quantity
+
+    # Calculating the Total Quantity which is Reserved by all users
+    total_reserved = 0
+    for reserve in reserves:
+        total_reserved += reserve
+
+    if total_reserved > 0:
+        # (product.quantity) == The WHOLE quantity which is available
+        # Total quantity which is available in the shop including reserves
+        total_quantity = int(product.quantity) - int(total_reserved)
+
+        # Check if user`s considered quantity is available in our shop or no (if is it, so user can buy)
+        if order_quantity <= total_quantity:
+            return True
+        else:
+            return False
+    else:
+        if order_quantity <= product.quantity:
+            return True
+        else:
+            return False
 
 
 def request_payment(request, pk):
