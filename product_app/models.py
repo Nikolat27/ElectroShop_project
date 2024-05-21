@@ -31,9 +31,6 @@ class Category(models.Model):
 
         if self.parent is None:
             if Category.objects.filter(parent__title=self.title).count() >= 2:
-                self.date_error_message(self, field_name="title", unique_for="title")
-        else:
-            if Category.objects.filter(parent__title=self.title).count() >= 2:
                 return
 
     def __str__(self):
