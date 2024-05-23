@@ -1,4 +1,6 @@
 import json
+import uuid
+
 import requests
 from random import randint
 from django.contrib.auth.decorators import login_required
@@ -33,121 +35,134 @@ description = "Hello World"
 CallbackURL = "http://127.0.0.1:8000/cart/verify_payment"
 
 
-def ajax_template_generator(request, user):
-    cart = Cart.objects.filter(user=user).first()
+def ajax_template_generator(request, user=None, session_id=None):
+    if user is not None:
+        cart = Cart.objects.get(user=user)
 
-    cart_length = cart.len()
-    cart_total_price = cart.total_cart_price()
-    total_quantity = cart.total_quantity()
+    if session_id is not None:
+        cart = Cart.objects.get(session_id=session_id)
+
     data = render_to_string("ajax_templates/cart_template_ajax.html",
-                            context={"cart": cart, "cart_length": cart_length, "cart_total_price": cart_total_price,
-                                     "total_len": total_quantity})
+                            context={"cart": cart})
     return data
 
 
 def cart_page(request):
-    cart = Cart.objects.filter(user=request.user).first()
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user).first()
+    else:
+        session_id = request.session.get("anonymous_user")
+        cart = Cart.objects.filter(session_id=session_id).first()
 
     return render(request, "cart_app/cart_page.html", context={"cart": cart})
 
 
 def add_cart(request, pk):
-    if request.user.is_authenticated is True:
-        if request.method == "POST":
-            user = request.user
-            product_id = pk
-            color = request.POST.get("color")
-            quantity = int(request.POST.get("quantity"))
-
-            if user and product_id and color and quantity:
-                cart = Cart.objects.filter(user=user)
-                product = Product.objects.get(id=product_id)
-
-                if cart.exists():
-                    # Check if the product already exists in the cart
-                    item_exists = CartItem.objects.filter(cart=cart.first(), product=product, color=color)
-                    if item_exists.exists():
-                        item = item_exists.first()
-                        item.quantity += quantity
-                        item.save()
-                        data = ajax_template_generator(request=request, user=user)
-                        return JsonResponse({"data": data, "bool": True})
-                    else:
-                        CartItem.objects.create(cart=cart.first(), product=product, quantity=quantity, color=color,
-                                                price=product.discount_price())
-                        data = ajax_template_generator(request=request, user=user)
-                        return JsonResponse({"data": data, "bool": True})
-                else:
-                    cart = Cart.objects.create(user=user)
-                    CartItem.objects.create(cart=cart, product=product, quantity=quantity, color=color,
-                                            price=product.discount_price())
-                    data = ajax_template_generator(request=request, user=user)
-                    return JsonResponse({"data": data, "bool": True})
+    if request.user.is_authenticated:
+        user = request.user
+        cart, created = Cart.objects.get_or_create(user=user)
     else:
-        print("hi")
+        session_id = request.session.get("anonymous_user")
+        if session_id is None:
+            session_id = str(uuid.uuid4())
+            request.session['anonymous_user'] = session_id
+            request.session.save()
+            cart, created = Cart.objects.get_or_create(session_id=session_id)
+        else:
+            cart, created = Cart.objects.get_or_create(session_id=session_id)
+
+    if request.method == "POST":
+        product_id = pk
+        color = request.POST.get("color")
+        quantity = int(request.POST.get("quantity"))
+
+        if product_id and color and quantity:
+            product = Product.objects.get(id=product_id)
+
+            # Check if the product already exists in the cart
+            item, created = CartItem.objects.get_or_create(cart=cart, product=product, color=color)
+            if item:
+                max_quantity = product.product_colors.filter(color__title__icontains=color).first().quantity
+                # item.quantity is the value of quantity that user have been added in the PAST!
+                # quantity is the value of quantity that user wants to add NOW!
+                total_quantity = item.quantity + quantity
+                if total_quantity < max_quantity:
+                    item.quantity += quantity
+                    if not item.price:
+                        item.price = product.discount_price()
+
+                    item.save()
+                else:
+                    # imagine 4 is the max_quantity and 2 is item.quantity(the value that we have added)
+                    # 4 - 2 = remaining_quantity(2)
+                    # item.quantity = item.quantity + 2(remaining_quantity)
+                    remaining_quantity = max_quantity - item.quantity
+                    item.quantity += remaining_quantity
+                    item.save()
+
+        if request.user.is_authenticated:
+            data = ajax_template_generator(request=request, user=user)
+        else:
+            data = ajax_template_generator(request=request, session_id=session_id)
+
+        return JsonResponse({"data": data, "bool": True})
 
 
 def cart_update(request, pk):
-    if request.user.is_authenticated is True:
-        new_quantity = int(request.GET.get("new_quantity"))
-        if new_quantity and new_quantity >= 1:
-            cart_item = CartItem.objects.get(id=pk)
-            cart_item.quantity = new_quantity
-            cart_item.save()
-            new_price = cart_item.total_item_price()
-            subtotal = cart_item.cart.total_cart_price()
-            return JsonResponse({"bool": True, "new_price": new_price, "subtotal": subtotal})
-        else:
-            return JsonResponse({"bool": False})
+    new_quantity = int(request.GET.get("new_quantity"))
+    if new_quantity and new_quantity >= 1:
+        cart_item = CartItem.objects.get(id=pk)
+        cart_item.quantity = new_quantity
+        cart_item.save()
+        new_price = cart_item.total_item_price()
+        subtotal = cart_item.cart.total_cart_price()
+        return JsonResponse({"bool": True, "new_price": new_price, "subtotal": subtotal})
+    else:
+        return JsonResponse({"bool": False})
 
 
 def remove_from_cart(request, pk):
-    user = request.user
-    cart_item_id = pk
-    if pk and user:
-        item = CartItem.objects.get(id=cart_item_id)
-        item.delete()
-        data = ajax_template_generator(request=request, user=user)
-        return JsonResponse({"data": data, "bool": True})
+    item = CartItem.objects.get(id=pk)
+    item.delete()
+
+    if request.user.is_authenticated:
+        data = ajax_template_generator(request=request, user=request.user)
     else:
-        return HttpResponse("error (pk and user)")
+        session_id = request.session.get("anonymous_user")
+        data = ajax_template_generator(request=request, session_id=session_id)
+
+    return JsonResponse({"data": data, "bool": True})
 
 
-# def add_cart_store(request, pk):
-#     user = request.user
-#     product_id = pk
-#     product = Product.objects.get(id=product_id)
-#     color = product.product_colors.first().color
-#     max_quantity = product.product_colors.first().quantity
-#
-#     if user and product:
-#         cart = Cart.objects.filter(user=user)
-#         # Check if the user has cart or no
-#         if cart.exists():
-#             # Check if the product already exists in the cart
-#             item_exists = CartItem.objects.filter(cart=cart.first(), product=product, color=color,
-#                                                   price=product.discount_price())
-#
-#             if item_exists.exists():
-#                 item = item_exists.first()
-#                 if not item.quantity > max_quantity:
-#                     item.quantity += 1
-#                     item.save()
-#                     data = ajax_template_generator(request=request, user=user)
-#                     return JsonResponse({"data": data, "bool": True})
-#                 else:
-#                     return JsonResponse({"error": "Cannot add more than maximum quantity", "bool": False})
-#             else:
-#                 CartItem.objects.create(cart=cart.first(), product=product, quantity=1, color=color,
-#                                         price=product.discount_price())
-#                 data = ajax_template_generator(request=request, user=user)
-#                 return JsonResponse({"data": data, "bool": True})
-#         else:
-#             cart = Cart.objects.create(user=user)
-#             CartItem.objects.create(cart=cart, product=product, quantity=1, color=color,
-#                                     price=product.discount_price())
-#             data = ajax_template_generator(request=request, user=user)
-#             return JsonResponse({"data": data, "bool": True})
+def add_cart_store(request, pk):
+    product = Product.objects.get(id=pk)
+    color = product.product_colors.first().color.title
+    max_quantity = product.product_colors.first().quantity
+
+    if request.user.is_authenticated:
+        # If user is authenticated, fetch the cart associated with the user
+        cart, created = Cart.objects.get_or_create(user=request.user)
+    else:
+        session_id = request.session.get("anonymous_user")
+        if not session_id:
+            session_id = str(uuid.uuid4())
+            request.session["anonymous_user"] = session_id
+            request.session.save()
+        # Fetch the cart associated with the session ID if user is not authenticated
+        cart, created = Cart.objects.get_or_create(session_id=session_id)
+
+    cartitem, created = CartItem.objects.get_or_create(cart=cart, product=product, color=color)
+    if cartitem.quantity < max_quantity:
+        cartitem.price = product.discount_price()
+        cartitem.quantity += 1
+        cartitem.save()
+
+        if request.user.is_authenticated:
+            data = ajax_template_generator(request=request, user=request.user)
+        else:
+            data = ajax_template_generator(request=request, session_id=session_id)
+
+        return JsonResponse({"data": data, "bool": True})
 
 
 @login_required

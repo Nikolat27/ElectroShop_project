@@ -1,7 +1,7 @@
 <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
     <i class="fa fa-shopping-cart"></i>
     <span>Your Cart</span>
-    <div class="qty">{{ total_len }}</div>
+    <div class="qty">{{ cart.total_quantity }}</div>
 </a>
 <div class="cart-dropdown">
     <div class="cart-list">
@@ -27,8 +27,8 @@
         {% endfor %}
     </div>
     <div class="cart-summary">
-        <small>{{ cart_length }} Item(s) selected</small>
-        <h5>SUBTOTAL: ${{ cart_total_price }}</h5>
+        <small>{{ cart.len }} Item(s) selected</small>
+        <h5>SUBTOTAL: ${{ cart.total_cart_price }}</h5>
     </div>
     <div class="cart-btns">
         <a href="{% url "cart_app:cart_page" %}">View Cart</a>

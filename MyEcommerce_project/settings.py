@@ -89,7 +89,7 @@ TEMPLATES = [
         },
     },
 ]
-
+x = ["105", "95", "64"]
 WSGI_APPLICATION = 'MyEcommerce_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

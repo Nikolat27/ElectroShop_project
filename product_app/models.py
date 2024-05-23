@@ -26,12 +26,10 @@ class Category(models.Model):
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="subs")
     title = models.CharField(max_length=50, unique=True)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.parent is None:
-            if Category.objects.filter(parent__title=self.title).count() >= 2:
-                return
+    def clean(self):
+        # Check if there are already 5 main categories
+        if self.parent is None and Category.objects.filter(parent=None).count() >= 5:
+            raise ValidationError("You have reached the limit of 5 main categories")
 
     def __str__(self):
         return self.title

@@ -171,27 +171,19 @@
                                                   style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
                                         </div>
                                     </div>
-                                    {{ product.get_price_for_past_30_days }}
-{#                                    <div class="add-to-cart">#}
-{#                                        {% if request.user.is_authenticated is True %}#}
-{#                                            {% if product.product_colors.all.first.in_stock is True %}#}
-{#                                                <button onclick="add_to_cart({{ product.id }})" class="add-to-cart-btn">#}
-{#                                                    <i#}
-{#                                                            class="fa fa-shopping-cart"></i> add to#}
-{#                                                    cart#}
-{#                                                </button>#}
-{#                                            {% else %}#}
-{#                                                <button type="button" class="add-to-cart-btn">#}
-{#                                                    <a style="color: white;">Not Available</a>#}
-{#                                                </button>#}
-{#                                            {% endif %}#}
-{#                                        {% else %}#}
-{#                                            <button type="button" class="add-to-cart-btn"><a style="color: white;"#}
-{#                                                                                             href="{% url "account_app:login" %}">Pls#}
-{#                                                Login</a>#}
-{#                                            </button>#}
-{#                                        {% endif %}#}
-{#                                    </div>#}
+                                    <div class="add-to-cart">
+                                        {% if product.product_colors.all.first.in_stock is True %}
+                                            <button onclick="add_to_cart({{ product.id }})" class="add-to-cart-btn">
+                                                <i
+                                                        class="fa fa-shopping-cart"></i> add to
+                                                cart
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="add-to-cart-btn">
+                                                <a style="color: white;">Not Available</a>
+                                            </button>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
 
@@ -206,20 +198,24 @@
                 <div class="store-filter clearfix" id="pagination_products">
                     <ul class="store-pagination">
                         {% if products.has_previous %}
-                            <li><a onclick="ajaxPagination('page={{ products.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                            <li><a onclick="ajaxPagination('page=
+                                    {{ products.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
                                     class="fa fa-angle-left"></i></a>
                             </li>
                         {% endif %}
                         {% for x in products.paginator.page_range %}
                             {% if products.number == x %}
-                                <li class="active"><a style="color: white;" onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
+                                <li class="active"><a style="color: white;" onclick="ajaxPagination('page=
+                                        {{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
                             {% else %}
-                                <li class=""><a onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
+                                <li class=""><a onclick="ajaxPagination('page=
+                                        {{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
                             {% endif %}
                         {% endfor %}
                         {% if products.has_next %}
                             <li>
-                                <a onclick="ajaxPagination('page={{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                                <a onclick="ajaxPagination('page=
+                                        {{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
                                         class="fa fa-angle-right"></i></a>
                             </li>
                         {% endif %}

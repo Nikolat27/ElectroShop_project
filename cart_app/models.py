@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.shortcuts import get_object_or_404
@@ -38,23 +40,25 @@ class Coupon(models.Model):
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_cart", primary_key=True)
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_cart", null=True, blank=True)
+    session_id = models.CharField(max_length=100, null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.user.username} - Cart"
-
+    # Subtotal
     def total_cart_price(self):
         subtotal = 0
         for item in self.cart_items.all():
             subtotal += item.total_item_price()
         return subtotal
 
+    # How Many Products do we have in our basket
     def len(self):
         total = 0
         for item in self.cart_items.all():
             total += 1
         return total
 
+    # How much are Quantities of our whole products
     def total_quantity(self):
         total = 0
         for item in self.cart_items.all():
@@ -66,13 +70,15 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="cart_items")
     color = models.CharField(max_length=30)
-    quantity = models.IntegerField(default=1)
-    price = models.BigIntegerField()
+    quantity = models.IntegerField(default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
 
     def total_item_price(self):
         if self.price and self.quantity:
             total_price = self.price * self.quantity
             return total_price
+        else:
+            return 0
 
 
 order_choices = (("unpaid", "unpaid"), ("paid", "paid"), ("refund", "refund"))

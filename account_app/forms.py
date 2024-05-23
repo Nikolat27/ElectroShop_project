@@ -1,6 +1,8 @@
 from captcha.fields import CaptchaField
 from django import forms
 from django.contrib.auth import login, authenticate
+
+from cart_app.models import Cart
 from .models import User
 from django.core.exceptions import ValidationError
 from django_recaptcha.fields import ReCaptchaField
@@ -15,14 +17,6 @@ class RegisterForm(forms.Form):
                             widget=forms.PasswordInput(attrs={'class': 'form-control', 'style': 'width: auto;'}))
     pass2 = forms.CharField(label="ReEnter your password: ", max_length=80, required=True,
                             widget=forms.PasswordInput(attrs={'class': 'form-control', 'style': 'width: auto;'}))
-
-    # def clean_password2(self):
-    #     cd = self.cleaned_data
-    #     password1 = cd.get("pass1")
-    #     password2 = cd.get("pass2")
-    #
-    #     if password1 and password2 and password1 != password2:
-    #         raise ValidationError(password2, "passwords does not match")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -72,6 +66,20 @@ class LoginForm(forms.Form):
 
         if user is not None:
             login(request, user=user, backend='django.contrib.auth.backends.ModelBackend')
+
+            session_id = request.session.get("anonymous_user")
+            anonymous_cart = Cart.objects.filter(session_id=session_id).first()
+            user_cart = Cart.objects.filter(user=user).first()
+            if anonymous_cart:
+                if user_cart:
+                    for item in anonymous_cart.cart_items.all():
+                        print(item.product.title)
+                        user_cart.cart_items.add(item)
+                    anonymous_cart.delete()
+                else:
+                    anonymous_cart.user = user
+                    anonymous_cart.session_id = None
+                    anonymous_cart.save()
         else:
             raise ValidationError("Your username or password is incorrect")
 
