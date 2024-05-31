@@ -102,10 +102,6 @@
                                                 {% if request.GET.sortBy and request.GET.sortBy == option|lower %}selected{% endif %}>{{ option }}
                                         </option>
                                     {% endfor %}
-                                    {#                                    <option class="sort-by" value="available">Available</option>#}
-                                    {#                                    <option class="sort-by" value="new">New</option>#}
-                                    {#                                    <option class="sort-by" value="popular">Popular</option>#}
-                                    {#                                    <option class="sort-by" value="discounted">Discounted</option>#}
                                 </select>
                             </label>
 
@@ -160,6 +156,7 @@
                                                 {% endif %}
                                             {% endfor %}
                                         </div>
+
                                         <div class="product-btns">
                                             <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
                                                     class="add-to-wishlist"><i
@@ -198,24 +195,20 @@
                 <div class="store-filter clearfix" id="pagination_products">
                     <ul class="store-pagination">
                         {% if products.has_previous %}
-                            <li><a onclick="ajaxPagination('page=
-                                    {{ products.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                            <li><a onclick="ajaxPagination('page={{ products.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
                                     class="fa fa-angle-left"></i></a>
                             </li>
                         {% endif %}
                         {% for x in products.paginator.page_range %}
                             {% if products.number == x %}
-                                <li class="active"><a style="color: white;" onclick="ajaxPagination('page=
-                                        {{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
+                                <li class="active"><a style="color: white;" onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
                             {% else %}
-                                <li class=""><a onclick="ajaxPagination('page=
-                                        {{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
+                                <li class=""><a onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
                             {% endif %}
                         {% endfor %}
                         {% if products.has_next %}
                             <li>
-                                <a onclick="ajaxPagination('page=
-                                        {{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                                <a onclick="ajaxPagination('page={{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
                                         class="fa fa-angle-right"></i></a>
                             </li>
                         {% endif %}

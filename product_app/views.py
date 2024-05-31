@@ -91,11 +91,11 @@ def filter_data(request):
     page_number = request.GET.get("page", 1)
 
     # Getting Products
-    products = Product.objects.all().distinct()
+    products = Product.objects.all().order_by("-id").distinct()
 
     # To Have a copy of GET method parameters
     query_params = request.GET.copy()
-
+    print(query_params)
     # To Avoid many 'page' parameters
     if "page" in query_params:
         del query_params["page"]
@@ -116,7 +116,6 @@ def filter_data(request):
 
     # Start Sorting
     if sort == "available":
-        # products = products.filter(in_stock=True).order_by("-id").distinct()
         products = products.filter(product_colors__in_stock=True).order_by("-id").distinct()
     elif sort == "new":
         products = products.order_by("-created_at").distinct()

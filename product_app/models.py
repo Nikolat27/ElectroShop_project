@@ -100,6 +100,9 @@ class Product(models.Model):
             prices.append(product_price.price)
         return prices
 
+    def is_liked(self, user):
+        return self.product_likes.filter(user=user).exists()
+
     def __str__(self):
         return self.title
 
