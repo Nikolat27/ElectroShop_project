@@ -34,16 +34,16 @@
                         {% endif %}
                     {% endfor %}
                 </div>
-                <div class="product-btns">
-                    <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
-                            class="add-to-wishlist"><i
-                            class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"
+{#                <div class="product-btns">#}
+{#                    <button onclick="like('{{ product.id }}', '{{ product.slug }}')"#}
+{#                            class="add-to-wishlist"><i#}
+{#                            class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"#}
                             {# Always put endif inside the "" #}
-                            id="{{ product.slug }}"></i><span
-                            class="tooltipp"></span></button>
-                    <span id="total-{{ product.slug }}-likes"
-                          style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
-                </div>
+{#                            id="{{ product.slug }}"></i><span#}
+{#                            class="tooltipp"></span></button>#}
+{#                    <span id="total-{{ product.slug }}-likes"#}
+{#                          style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>#}
+{#                </div>#}
             </div>
             <div class="add-to-cart">
                 {% if product.product_colors.all.first.in_stock is True %}

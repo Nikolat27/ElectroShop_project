@@ -124,7 +124,7 @@
                             <textarea class="input" name="optional_notes"
                                       placeholder="Order Notes (Optional)"></textarea>
                         </div>
-                        <input type="hidden" name="subtotal" value="{{ cart_total_price }}">
+                        <input type="hidden" name="subtotal" value="{{ cart.total_cart_price }}">
                         <!-- /Order notes -->
                     </div>
 
@@ -153,7 +153,8 @@
                             <div class="order-products">
                                 {% for item in cart.cart_items.all %}
                                     <div class="order-col">
-                                        <div>{{ item.quantity }}x {{ item.product.title }} - Color = {{ item.color.title }}
+                                        <div>{{ item.quantity }}x {{ item.product.title }} - Color
+                                            = {{ item.color.title }}
                                         </div>
                                         <div>${{ item.total_item_price }}</div>
                                     </div>
@@ -162,12 +163,12 @@
                                 {% endfor %}
                             </div>
                             <div class="order-col">
-                                <div>Shiping</div>
+                                <div>Shipping</div>
                                 <div><strong>FREE</strong></div>
                             </div>
                             <div class="order-col">
                                 <div><strong>TOTAL</strong></div>
-                                <div><strong class="order-total">${{ cart_total_price }}</strong></div>
+                                <div><strong class="order-total">${{ cart.total_cart_price }}</strong></div>
                             </div>
                         </div>
                         <div class="payment-method">

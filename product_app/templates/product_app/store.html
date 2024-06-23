@@ -157,16 +157,16 @@
                                             {% endfor %}
                                         </div>
 
-                                        <div class="product-btns">
-                                            <button onclick="like('{{ product.id }}', '{{ product.slug }}')"
-                                                    class="add-to-wishlist"><i
-                                                    class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"
+{#                                        <div class="product-btns">#}
+{#                                            <button onclick="like('{{ product.id }}', '{{ product.slug }}')"#}
+{#                                                    class="add-to-wishlist"><i#}
+{#                                                    class="{% if request|is_liked:product.id is True %}fa fa-heart{% else %}fa fa-heart-o{% endif %}"#}
                                                     {# Always put endif inside the "" #}
-                                                    id="{{ product.slug }}"></i><span
-                                                    class="tooltipp"></span></button>
-                                            <span id="total-{{ product.slug }}-likes"
-                                                  style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>
-                                        </div>
+{#                                                    id="{{ product.slug }}"></i><span#}
+{#                                                    class="tooltipp"></span></button>#}
+{#                                            <span id="total-{{ product.slug }}-likes"#}
+{#                                                  style="color: blue; font-weight: bold;">{{ product.id|total_product_likes }}</span>#}
+{#                                        </div>#}
                                     </div>
                                     <div class="add-to-cart">
                                         {% if product.product_colors.all.first.in_stock is True %}
@@ -202,15 +202,22 @@
                         {% for x in products.paginator.page_range %}
                             {% if products.number == x %}
                                 <li class="active"><a style="color: white;" onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
-                            {% else %}
+                            {% elif x > products.number|add:'-4' and x < products.number|add:'4' %}
                                 <li class=""><a onclick="ajaxPagination('page={{ x }}{% if query_params %}&{{ query_params }}{% endif %}')">{{ x }}</a></li>
                             {% endif %}
                         {% endfor %}
                         {% if products.has_next %}
+                            {% if products.number < products.paginator.num_pages|add:'-2' %}
                             <li>
                                 <a onclick="ajaxPagination('page={{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
                                         class="fa fa-angle-right"></i></a>
                             </li>
+                            {% else %}
+                            <li>
+                                <a onclick="ajaxPagination('page={{ products.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}')"><i
+                                        class="fa fa-angle-right"></i></a>
+                            </li>
+                            {% endif %}
                         {% endif %}
                     </ul>
                 </div>

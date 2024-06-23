@@ -168,10 +168,38 @@
                             <!-- tab2  -->
                             <div id="tab2" class="tab-pane fade in">
                                 <div class="row">
+                                    <style>
+                                        table {
+                                            width: 100%;
+                                            border-collapse: collapse;
+                                        }
+
+                                        th, td {
+                                            border: 1px solid #ddd;
+                                            padding: 8px;
+                                        }
+
+                                        th {
+                                            background-color: #f2f2f2;
+                                        }
+
+                                        tr:nth-child(even) {
+                                            background-color: #f2f2f2;
+                                        }
+                                    </style>
                                     <div class="col-md-12">
-                                        {% for detail in product.specifications.all %}
-                                            <p>{{ detail }}</p>
-                                        {% endfor %}
+                                        <table>
+                                            <tr>
+                                                <th>Specifications</th>
+                                                <th>Detail</th>
+                                            </tr>
+                                            {% for details in product.specifications.all %}
+                                                <tr>
+                                                    <th>{{ details.title }}</th>
+                                                    <th>{{ details.value }}</th>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
                                     </div>
                                 </div>
                             </div>

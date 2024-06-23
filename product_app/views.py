@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Max, Min
@@ -120,7 +121,7 @@ def filter_data(request):
     elif sort == "new":
         products = products.order_by("-created_at").distinct()
     elif sort == "popular":
-        products = Product.objects.annotate(avg_rating=Avg('comments__rating')).order_by('-avg_rating')
+        products = products.annotate(avg_rating=Avg('comments__rating')).order_by('-avg_rating')
     elif sort == "discounted":
         products = products.filter(discount=True).order_by("-created_at").distinct()
 

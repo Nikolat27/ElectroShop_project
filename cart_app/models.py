@@ -10,7 +10,12 @@ from django.utils import timezone
 
 
 # Create your models here.
-
+# class OrderStatus(models.IntegerChoices):
+#     success = 1, _("موفقیت امیز")
+#     pending = 2, _("درحال پردازش")
+#     cancelled = 3, _("لغو شده")
+#     posted = 4, _("ارسال شده")
+#     delivered = 5, _("تحویل داده شده")
 
 class Coupon(models.Model):
     code = models.CharField(max_length=30, unique=True)
