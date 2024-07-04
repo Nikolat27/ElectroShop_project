@@ -22,7 +22,6 @@ $(document).ready(function () {
                 return el.value;
             });
         });
-        let formData = $.param(filter_object); // Serialize the filter object to a query string
         $.ajax({
             url: '/products/filter-data',
             data: filter_object,
@@ -30,9 +29,9 @@ $(document).ready(function () {
             success: function (response) {
                 if (response.bool === true) {
                     // Update URL with GET parameters
-                    let newUrl = window.location.href.split('?')[0] + '?' + formData;
-                    history.pushState(null, '', newUrl);
-
+                    history.pushState(null, '', response.new_url);
+                    let url_path_field = document.getElementById("current_url");
+                    url_path_field.value = response.new_url
                     $("#filteredProducts").html(response.data);
                     $("#pagination_products").html(response.data2);
                 }

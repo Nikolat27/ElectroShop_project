@@ -1,10 +1,11 @@
-from django.contrib.auth import authenticate
+from urllib import parse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Max, Min
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
 
 from product_app.models import Product, Comment, Category, Brand, Like, ProductColor
 
@@ -72,7 +73,6 @@ def store_page(request):
 
     paginator = Paginator(products, 1)
     products = paginator.get_page(page_number)
-
     return render(request, "product_app/store.html",
                   context={"products": products, "brands": brands, "categories": categories, "total": total,
                            "sortBy_options": sortby_options,
@@ -96,10 +96,13 @@ def filter_data(request):
 
     # To Have a copy of GET method parameters
     query_params = request.GET.copy()
-    print(query_params)
+
     # To Avoid many 'page' parameters
     if "page" in query_params:
         del query_params["page"]
+
+    if "current_url" in query_params:
+        del query_params['current_url']
 
     # If user has searched sth
     if q and len(q) > 0:
@@ -137,7 +140,22 @@ def filter_data(request):
     data = render_to_string('ajax_templates/store_ajax.html', {'products': products})
     data2 = render_to_string("ajax_templates/pagination_ajax.html",
                              {"products": products, "query_params": query_params.urlencode()})
-    return JsonResponse({"bool": True, 'data': data, "data2": data2})
+
+    # This new_url variable is JUST used for clear-filters function
+    new_url = request.get_full_path().replace("filter-data", "store").split("&current_url")[0]
+
+    return JsonResponse({"bool": True, 'data': data, "data2": data2, "new_url": new_url})
+
+
+def clear_filters(request):
+    current_url = request.GET.get("current_url")
+    parsed_url = parse.urlparse(current_url)
+    query_params = parse.parse_qs(parsed_url.query)
+
+    cleared_queries = {k: v for k, v in query_params.items() if k in ['page', "q", "sort", "show"]}
+    new_queries = parse.urlencode(cleared_queries, doseq=True)
+    new_url = f"/products/filter-data?{new_queries}"
+    return HttpResponseRedirect(new_url)
 
 
 def add_like(request, pk):

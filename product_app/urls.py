@@ -7,6 +7,7 @@ urlpatterns = [
     path("add_comment/<int:pk>", views.add_comment, name="add_comment"),
     path("store", views.store_page, name="store_page"),
     path('filter-data', views.filter_data, name="filter-data"),
+    path('clear-filters', views.clear_filters, name="clear_filters"),
     path('add_like/<int:pk>', views.add_like, name="add_like"),
     path('wishlists', views.wishlist_page, name="wishlist_page"),
     path("autocomplete", views.autocomplete, name="autocomplete"),
