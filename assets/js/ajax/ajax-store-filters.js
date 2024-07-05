@@ -31,6 +31,7 @@ $(document).ready(function () {
                     // Update URL with GET parameters
                     history.pushState(null, '', response.new_url);
                     let url_path_field = document.getElementById("current_url");
+                    console.log("Filter function", response.new_url)
                     url_path_field.value = response.new_url
                     $("#filteredProducts").html(response.data);
                     $("#pagination_products").html(response.data2);

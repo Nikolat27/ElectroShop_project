@@ -143,7 +143,6 @@ def filter_data(request):
 
     # This new_url variable is JUST used for clear-filters function
     new_url = request.get_full_path().replace("filter-data", "store").split("&current_url")[0]
-
     return JsonResponse({"bool": True, 'data': data, "data2": data2, "new_url": new_url})
 
 
@@ -155,7 +154,7 @@ def clear_filters(request):
     cleared_queries = {k: v for k, v in query_params.items() if k in ['page', "q", "sort", "show"]}
     new_queries = parse.urlencode(cleared_queries, doseq=True)
     new_url = f"/products/filter-data?{new_queries}"
-    return HttpResponseRedirect(new_url)
+    return JsonResponse({"url": new_url})
 
 
 def add_like(request, pk):

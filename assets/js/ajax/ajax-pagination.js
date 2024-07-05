@@ -1,5 +1,4 @@
 function ajaxPagination(query_params) {
-    console.log(query_params);
 
     // Decode the query parameters
     query_params = decodeURIComponent(query_params);
@@ -30,8 +29,6 @@ function ajaxPagination(query_params) {
         }
     }
 
-    let formData = $.param(filter_object); // Serialize the filter object to a query string
-
     $.ajax({
         url: '/products/filter-data',
         data: filter_object,
@@ -39,13 +36,13 @@ function ajaxPagination(query_params) {
         success: function (response) {
             if (response.bool === true) {
                 // Update URL with GET parameters
-                let newUrl = window.location.href.split('?')[0] + '?' + formData;
-                history.pushState(null, '', newUrl);
-
+                history.pushState(null, '', response.new_url);
+                let url_path_field = document.getElementById("current_url");
+                url_path_field.value = response.new_url
+                console.log("Pagination function", response.new_url)
                 $("#filteredProducts").html(response.data);
                 $("#pagination_products").html(response.data2);
             }
         }
     });
-    console.log(filter_object);
 }
