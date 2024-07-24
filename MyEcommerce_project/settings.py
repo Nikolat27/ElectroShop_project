@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-gm#r^_@rb3dv8!isizs6_ed4g60pddnw3xb8@0_--06*wim&o4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['185.8.174.180', 'samalizadeh.ir', 'www.samalizadeh.ir', "127.0.0.1"]
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "captcha",
     "django_recaptcha",
     "axes",
+    "celery",
+    "django_celery_results"
 ]
 
 SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
@@ -89,7 +91,6 @@ TEMPLATES = [
         },
     },
 ]
-x = ["105", "95", "64"]
 WSGI_APPLICATION = 'MyEcommerce_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -158,3 +159,10 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "assets")]
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CELERY_BROKER_URL = 'redis://default:EYWJXludachnWaBLbCTCpLrKhEestEMC@roundhouse.proxy.rlwy.net:28042'
+CELERY_TIMEZONE = "Asia/tehran"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'

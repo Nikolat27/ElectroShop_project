@@ -1,5 +1,6 @@
 import uuid
-
+from django.db.models.signals import pre_save, post_save, pre_init
+from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.shortcuts import get_object_or_404
@@ -10,13 +11,6 @@ from django.utils import timezone
 
 
 # Create your models here.
-# class OrderStatus(models.IntegerChoices):
-#     success = 1, _("موفقیت امیز")
-#     pending = 2, _("درحال پردازش")
-#     cancelled = 3, _("لغو شده")
-#     posted = 4, _("ارسال شده")
-#     delivered = 5, _("تحویل داده شده")
-
 class Coupon(models.Model):
     code = models.CharField(max_length=30, unique=True)
     discount_percentage = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
@@ -30,18 +24,17 @@ class Coupon(models.Model):
     number_of_times_used = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.code} - {self.discount_percentage}"
+        return f"{self.code} - {self.discount_percentage} - is Expired: {self.expired}"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        now = timezone.make_aware(datetime.now())
-        if self.valid_from and self.valid_to:
-            if (now < self.valid_from) or (now > self.valid_to):
-                self.expired = True
-                self.save()
-            else:
-                self.expired = False
-                self.save()
+
+@receiver(pre_save, sender=Coupon)
+def set_coupon_expired(sender, instance, **kwargs):
+    now = timezone.now()
+    if instance.valid_from and instance.valid_to:
+        if now > instance.valid_to:
+            instance.expired = True
+        else:
+            instance.expired = False
 
 
 class Cart(models.Model):
