@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
-from MyEcommerce_project import settings
+from ElectroShop_project import settings
 from account_app.models import User
 from cart_app.models import Cart, Coupon, Order, OrderItem, City, Province, CartItem, Reserve
 from product_app.models import Product, ProductColor

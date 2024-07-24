@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.shortcuts import get_object_or_404
 from account_app.models import User
+from cart_app.tasks import delete_order_automatically
 from product_app.models import Product, ProductColor
 from datetime import datetime
 from django.utils import timezone
@@ -111,11 +112,17 @@ class Order(models.Model):
             minutes_left = 60 - total_minutes
             return minutes_left
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.created_at:
-            if self.time_difference() <= 0:
-                self.delete()
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     if self.created_at:
+    #         if self.time_difference() <= 0:
+    #             self.delete()
+
+    def save(self, *args, **kwargs):
+        super(Order, self).save(*args, **kwargs)
+
+        # # Schedule the deletion task for 1 hour later
+        # delete_order_automatically.apply_async((self.id,), countdown=60)
 
     def calculate_subtotal(self):
         order_items = self.order_items.all()
