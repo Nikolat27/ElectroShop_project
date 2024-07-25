@@ -3,12 +3,11 @@ from django.db.models.signals import pre_save, post_save, pre_init
 from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.shortcuts import get_object_or_404
 from account_app.models import User
-from cart_app.tasks import delete_order_automatically
 from product_app.models import Product, ProductColor
 from datetime import datetime
 from django.utils import timezone
+from .tasks import delete_reservation_automatically
 
 
 # Create your models here.
@@ -28,7 +27,7 @@ class Coupon(models.Model):
         return f"{self.code} - {self.discount_percentage} - is Expired: {self.expired}"
 
 
-@receiver(pre_save, sender=Coupon)
+@receiver(pre_init, sender=Coupon)
 def set_coupon_expired(sender, instance, **kwargs):
     now = timezone.now()
     if instance.valid_from and instance.valid_to:
@@ -98,7 +97,7 @@ class Order(models.Model):
     status = models.CharField(choices=order_choices, max_length=20, default="unpaid")
     order_code = models.CharField(max_length=20, unique=True)
     optional_notes = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     coupon_used = models.BooleanField(default=False)
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -111,18 +110,6 @@ class Order(models.Model):
             total_minutes = time_difference.total_seconds() // 60
             minutes_left = 60 - total_minutes
             return minutes_left
-
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     if self.created_at:
-    #         if self.time_difference() <= 0:
-    #             self.delete()
-
-    def save(self, *args, **kwargs):
-        super(Order, self).save(*args, **kwargs)
-
-        # # Schedule the deletion task for 1 hour later
-        # delete_order_automatically.apply_async((self.id,), countdown=60)
 
     def calculate_subtotal(self):
         order_items = self.order_items.all()
@@ -184,28 +171,11 @@ class Reserve(models.Model):
     reserved_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     color = models.CharField(max_length=50, null=True, blank=True)
     quantity = models.IntegerField()
-    is_paid = models.BooleanField(default=False)
-    expiration_date = models.IntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    is_expired = models.BooleanField(default=False)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.expiration_date and self.created_at:
-            creation_time = self.created_at
-            current_time = timezone.now()
-
-            time_difference = current_time - creation_time
-            minutes_difference = time_difference.total_seconds() / 60
-            if minutes_difference >= 1000:
-                if self.is_paid is False:
-                    # color = self.color.lower()
-                    # product = ProductColor.objects.get(product=self.product, color__title__icontains=color)
-                    # product.quantity += self.quantity
-                    # product.save()
-                    self.is_expired = True
-                else:
-                    self.delete()
+    def save(self, *args, **kwargs):
+        super(Reserve, self).save(*args, **kwargs)
+        delete_reservation_automatically.apply_async((self.id,), countdown=60)
 
     def __str__(self):
         return f"User = {self.user.username} - Product = {self.product.title} - Color = {self.color} - Quantity = {self.quantity}"

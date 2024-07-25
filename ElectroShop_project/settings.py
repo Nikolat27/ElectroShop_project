@@ -13,6 +13,7 @@ import os.path
 from pathlib import Path
 
 from celery.schedules import crontab
+from django.utils import timezone
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,7 +49,8 @@ INSTALLED_APPS = [
     "django_recaptcha",
     "axes",
     "celery",
-    "django_celery_results"
+    "django_celery_results",
+    "aioclock"
 ]
 
 SILENCED_SYSTEM_CHECKS = ['django_recaptcha.recaptcha_test_key_error']
@@ -162,7 +164,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "assets")]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = 'redis://default:EYWJXludachnWaBLbCTCpLrKhEestEMC@roundhouse.proxy.rlwy.net:28042'
+CELERY_BROKER_URL = 'redis://default:uzIyuxreJaaLqTFYXRMOnOpSZBsSTuhC@monorail.proxy.rlwy.net:58345'
 CELERY_TIMEZONE = "Asia/tehran"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
@@ -181,7 +183,7 @@ CACHES = {
 CELERY_BEAT_SCHEDULE = {
     "delete_order_automatically": {
         "task": "cart_app.tasks.delete_order_automatically",
-        "schedule": crontab(minute="*/1"),
+        "schedule": timezone.timedelta(seconds=60),
     },
 }
 # celery -A ElectroShop_project worker --pool=solo -l info
